@@ -27,7 +27,7 @@ class CreateCertificadosTable extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('certificados', function (Blueprint $table) {
+        Schema::table('certificados', function (Blueprint $table) {
             $table->foreign('participante_id')->references('id')->on('users');
             $table->foreign('evento_id')->references('id')->on('eventos');
             $table->foreign('instituicao_id')->references('id')->on('instituicoes');
