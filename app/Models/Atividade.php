@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Atividade extends Model {
     use HasFactory;
 
+    protected $casts = [
+        'data' => 'date:d/m/Y',
+        'horario_inicio' => 'date:H:i',
+        'horario_fim' => 'date:H:i',
+    ];
+
     public function evento() {
         return $this->belongsTo(Evento::class);
     }
