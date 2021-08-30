@@ -28,7 +28,7 @@ class CreateEventosTable extends Migration {
         });
 
         Schema::table('eventos', function (Blueprint $table) {
-            $table->foreign('categoria_id')->references('id')->on('categoria');
+            $table->foreign('categoria_id')->references('id')->on('categorias');
             $table->foreign('tipo_id')->references('id')->on('tipo_eventos');
             $table->foreign('instituicao_id')->references('id')->on('instituicoes');
             $table->foreign('user_id')->references('id')->on('users');
