@@ -26,7 +26,7 @@ class CreateAtividadesTable extends Migration {
             $table->unsignedBigInteger('apresentador_id');
             $table->timestamps();
         });
-        Schema::create('atividades', function (Blueprint $table) {
+        Schema::table('atividades', function (Blueprint $table) {
             $table->foreign('evento_id')->references('id')->on('eventos');
             $table->foreign('tipo_atividade_id')->references('id')->on('tipo_atividades');
             $table->foreign('apresentador_id')->references('id')->on('users');
