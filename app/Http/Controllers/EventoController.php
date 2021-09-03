@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Atividade;
 use App\Models\Evento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,11 +30,38 @@ class EventoController extends Controller {
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function store(Request $request) {
+    public function store(Request $request): JsonResponse {
+        $e = new Evento();
+        $e->nome = $request->nome;
+        $e->breve_descricao = $request->breve_descricao;
+        $e->expectativa_participantes = $request->expectativa_participantes;
+        $e->link_evento = $request->link_evento;
+        $e->local = $request->local;
+        $e->descricao = $request->descricao;
+        $e->tipo_id = 1;
+        $e->instituicao_id = 4;
+        $e->categoria()->associate($request->categoria_id);
+        $e->user()->associate(2);
+        $e->save();
 
+        //criar atividades
+        $atividades = json_decode($request->atividades);
+        foreach ($atividades as $atv) {
+            $a = new Atividade();
+            $a->nome = $atv->nome;
+            $a->data = $atv->data;
+            $a->horario_inicio = $atv->horario_inicio;
+            $a->horario_fim = $atv->horario_fim;
+            $a->tipo_atividade()->associate($atv->tipo_atividade);
+            $a->evento()->associate($e->id);
+            $a->save();
+        }
+
+
+        return response()->json($atividades, 201);
     }
 
     /**
@@ -52,7 +80,7 @@ class EventoController extends Controller {
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
      * @return \Illuminate\Http\Response
      */
