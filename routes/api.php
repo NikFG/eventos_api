@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\EventoController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\EventoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +25,9 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/", [EventoController::class, 'index']);
     Route::get("/{id}", [EventoController::class, 'show']);
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria']);
+    Route::post("/store", [EventoController::class, 'store']);
 });
+
 Route::group(["prefix" => "categorias"], function () {
     Route::get("/", [CategoriaController::class, 'index']);
 });
