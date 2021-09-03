@@ -13,7 +13,7 @@ class CategoriaController extends Controller {
      * @return JsonResponse
      */
     public function index(): JsonResponse {
-        $categorias = Categoria::all();
+        $categorias = Categoria::orderBy('nome')->get();
         return response()->json($categorias);
     }
 
