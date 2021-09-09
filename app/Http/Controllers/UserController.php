@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evento;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
@@ -77,5 +80,15 @@ class UserController extends Controller {
      */
     public function destroy($id) {
         //
+    }
+
+    public function atividades_participadas() {
+        $user = Auth::user();
+        $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
+            $query->whereRelation('users', 'users.id', $user->id)->with('users');
+        })
+            ->with('atividades')
+            ->get();
+        return response()->json($atividades);
     }
 }

@@ -26,6 +26,7 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/{id}", [EventoController::class, 'show']);
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria']);
     Route::post("/store", [EventoController::class, 'store']);
+    Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
 });
 
 Route::group(["prefix" => "categorias"], function () {
@@ -34,6 +35,8 @@ Route::group(["prefix" => "categorias"], function () {
 
 
 Route::group(["prefix" => "user"], function () {
+    Route::get('/atividades', [UserController::class, 'atividades_participadas']);
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
+
 });

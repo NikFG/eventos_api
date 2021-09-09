@@ -9,11 +9,11 @@ class ParticipanteAtividade extends Model {
     use HasFactory;
 
     public function atividades() {
-        return $this->belongsToMany(Atividade::class, ParticipanteAtividade::class, 'atividade_id', 'participante_id');
+        return $this->belongsToMany(Atividade::class, ParticipanteAtividade::class, 'atividade_id');
     }
 
     public function participantes() {
-        return $this->belongsToMany(User::class, ParticipanteAtividade::class, 'participante_id', 'atividade_id');
+        return $this->belongsToMany(User::class, ParticipanteAtividade::class, 'user_id');
     }
 
 }

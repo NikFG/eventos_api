@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Atividade;
 use App\Models\Evento;
+use App\Models\ParticipanteAtividade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class EventoController extends Controller {
     /**
@@ -16,7 +19,7 @@ class EventoController extends Controller {
     public function index(): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])->with('imagens')->with('categoria')->get();
+        }])->with('imagens')->with('categoria')->whereHas('atividades')->get();
         return response()->json($eventos);
     }
 
@@ -71,9 +74,9 @@ class EventoController extends Controller {
      * @return JsonResponse
      */
     public function show($id) {
-        $evento = Evento::find($id)->with(['atividades' => function ($query) {
+        $evento = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])->with('imagens')->get();
+        }])->find($id);
         return response()->json($evento);
     }
 
@@ -82,7 +85,7 @@ class EventoController extends Controller {
      *
      * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, $id) {
         //
@@ -92,9 +95,24 @@ class EventoController extends Controller {
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy($id) {
         //
+    }
+
+    public function compraIngresso(Request $request) {
+        $user = Auth::user();
+        $atividades_id = json_decode($request->atividades);
+        foreach ($atividades_id as $id) {
+
+            $pa = new ParticipanteAtividade();
+            $pa->atividade_id = $id;
+            $pa->user_id = $user->id;
+            $pa->save();
+        }
+
+        return response()->json(["Ok"], 201);
+
     }
 }

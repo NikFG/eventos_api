@@ -9,7 +9,7 @@ class Evento extends Model {
     use HasFactory;
 
     public function atividades() {
-        return $this->hasMany(Atividade::class);
+        return $this->hasMany(Atividade::class)->with('users');
     }
 
     public function certificados() {
