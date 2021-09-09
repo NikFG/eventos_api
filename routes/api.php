@@ -14,6 +14,26 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+//Route::middleware('auth:api')->get('/user', function (Request $request) {
+//    return $request->user();
+//});
+
+Route::group(["prefix" => "eventos"], function () {
+    Route::get("/", [EventoController::class, 'index']);
+    Route::get("/{id}", [EventoController::class, 'show']);
+    Route::get("/categorias/{id}", [EventoController::class, 'porCategoria']);
+    Route::post("/store", [EventoController::class, 'store']);
+    Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
+});
+
+Route::group(["prefix" => "categorias"], function () {
+    Route::get("/", [CategoriaController::class, 'index']);
+});
+
+
+Route::group(["prefix" => "user"], function () {
+    Route::get('/atividades', [UserController::class, 'atividades_participadas']);
+    Route::post("/register", [UserController::class, 'store']);
+    Route::post("/login", [AuthController::class, 'login']);
+
 });
