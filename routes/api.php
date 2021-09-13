@@ -23,10 +23,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(["prefix" => "eventos"], function () {
     Route::get("/", [EventoController::class, 'index']);
-    Route::get("/{id}", [EventoController::class, 'show']);
-    Route::get("/categorias/{id}", [EventoController::class, 'porCategoria']);
+    Route::get("/{id}", [EventoController::class, 'show'])->where('id', '[0-9]+');;
+    Route::get("/criados", [EventoController::class, 'eventos_criados']);
+    Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
+
+
     Route::post("/store", [EventoController::class, 'store']);
     Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
+
 });
 
 Route::group(["prefix" => "categorias"], function () {
