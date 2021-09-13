@@ -113,6 +113,14 @@ class EventoController extends Controller {
         }
 
         return response()->json(["Ok"], 201);
+    }
+
+    public function eventos_criados(): JsonResponse {
+        $user = Auth::user();
+        $eventos = Evento::with('atividades')->where('user_id', $user->id)->get();
+
+        return response()->json($eventos);
+    }
 
     }
 }
