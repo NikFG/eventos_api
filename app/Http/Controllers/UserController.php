@@ -82,13 +82,6 @@ class UserController extends Controller {
         //
     }
 
-    public function atividades_participadas() {
-        $user = Auth::user();
-        $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
-            $query->whereRelation('users', 'users.id', $user->id)->with('users');
-        })
-            ->with('atividades')
-            ->get();
-        return response()->json($atividades);
-    }
+
+
 }
