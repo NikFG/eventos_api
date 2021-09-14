@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Atividade;
 use App\Models\Evento;
+use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class EventoController extends Controller {
     /**
@@ -38,6 +40,8 @@ class EventoController extends Controller {
      * @return JsonResponse
      */
     public function store(Request $request): JsonResponse {
+        $user = Auth::user();
+        $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
         $e = new Evento();
         $e->nome = $request->nome;
         $e->breve_descricao = $request->breve_descricao;
@@ -46,9 +50,9 @@ class EventoController extends Controller {
         $e->local = $request->local;
         $e->descricao = $request->descricao;
         $e->tipo_id = 1;
-        $e->instituicao_id = 4;
+        $e->instituicao_id = $instituicao->id;
         $e->categoria()->associate($request->categoria_id);
-        $e->user()->associate(2);
+        $e->user()->associate($user->id);
         $e->save();
 
         //criar atividades
@@ -144,6 +148,7 @@ class EventoController extends Controller {
 
         return response()->json($eventos);
     }
+
     public function atividades_participadas(): JsonResponse {
         $user = Auth::user();
         $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
