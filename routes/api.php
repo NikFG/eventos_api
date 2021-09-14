@@ -26,6 +26,8 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/{id}", [EventoController::class, 'show'])->where('id', '[0-9]+');;
     Route::get("/criados", [EventoController::class, 'eventos_criados']);
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
+    Route::get('/user/atividades', [EventoController::class, 'atividades_participadas']);
+    Route::get("/pesquisa/{query}", [EventoController::class, 'search']);
 
     Route::get('/user/atividades', [EventoController::class, 'atividades_participadas']);
     Route::post("/store", [EventoController::class, 'store']);
