@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\InstituicaoController;
+use App\Http\Controllers\TipoAtividadeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +29,6 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/criados", [EventoController::class, 'eventos_criados']);
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
 
-    Route::get('/user/atividades', [EventoController::class, 'atividades_participadas']);
     Route::post("/store", [EventoController::class, 'store']);
     Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
 
@@ -43,4 +44,11 @@ Route::group(["prefix" => "user"], function () {
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
 
+});
+Route::group(["prefix" => "instituicao"], function () {
+    Route::post("/store", [InstituicaoController::class, 'store']);
+});
+
+Route::group(["prefix" => "tipoAtividades"], function () {
+    Route::get("/", [TipoAtividadeController::class, 'index']);
 });
