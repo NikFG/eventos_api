@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class EventoController extends Controller {
     /**
@@ -121,7 +122,7 @@ class EventoController extends Controller {
 
         return response()->json($eventos);
     }
-    public function atividades_participadas() {
+    public function atividades_participadas(): JsonResponse {
         $user = Auth::user();
         $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
             $query->whereRelation('users', 'users.id', $user->id)->with('users');
