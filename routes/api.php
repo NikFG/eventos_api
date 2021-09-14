@@ -27,7 +27,7 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/criados", [EventoController::class, 'eventos_criados']);
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
 
-
+    Route::get('/user/atividades', [EventoController::class, 'atividades_participadas']);
     Route::post("/store", [EventoController::class, 'store']);
     Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
 
@@ -39,7 +39,7 @@ Route::group(["prefix" => "categorias"], function () {
 
 
 Route::group(["prefix" => "user"], function () {
-    Route::get('/atividades', [UserController::class, 'atividades_participadas']);
+
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
 
