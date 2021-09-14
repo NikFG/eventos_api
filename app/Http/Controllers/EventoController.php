@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Atividade;
 use App\Models\Evento;
+use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class EventoController extends Controller {
     /**
@@ -38,6 +40,8 @@ class EventoController extends Controller {
      * @return JsonResponse
      */
     public function store(Request $request): JsonResponse {
+        $user = Auth::user();
+        $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
         $e = new Evento();
         $e->nome = $request->nome;
         $e->breve_descricao = $request->breve_descricao;
@@ -46,9 +50,9 @@ class EventoController extends Controller {
         $e->local = $request->local;
         $e->descricao = $request->descricao;
         $e->tipo_id = 1;
-        $e->instituicao_id = 4;
+        $e->instituicao_id = $instituicao->id;
         $e->categoria()->associate($request->categoria_id);
-        $e->user()->associate(2);
+        $e->user()->associate($user->id);
         $e->save();
 
         //criar atividades
@@ -74,11 +78,33 @@ class EventoController extends Controller {
      * @param int $id
      * @return JsonResponse
      */
-    public function show($id) {
+    public function show($id): JsonResponse {
         $evento = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
         }])->find($id);
         return response()->json($evento);
+    }
+
+    public function search($query): JsonResponse {
+
+        $unwanted_array = array('Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+            'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U',
+            'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c',
+            'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o',
+            'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'þ' => 'b', 'ÿ' => 'y');
+
+        $str = strtr($query, $unwanted_array);
+        $queryLower = trim(strtolower($str));
+        $eventos = Evento::with(['atividades' => function ($query) {
+            $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
+        }])
+            ->where(DB::raw('lower(nome)'), 'like', '%' . $queryLower . '%')
+            ->orWhere(DB::raw('lower(breve_descricao)'), 'like', '%' . $queryLower . '%')
+            ->orWhereHas('categoria', function ($q) use ($queryLower) {
+                $q->where(DB::raw('lower(categorias.nome)'), 'like', '%' . $queryLower . '%');
+            })
+            ->get();
+        return response()->json($eventos);
     }
 
     /**
@@ -122,6 +148,7 @@ class EventoController extends Controller {
 
         return response()->json($eventos);
     }
+
     public function atividades_participadas(): JsonResponse {
         $user = Auth::user();
         $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
