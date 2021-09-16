@@ -12,8 +12,8 @@ class LatLongNullable extends Migration {
      */
     public function up() {
         Schema::table('instituicoes', function (Blueprint $table) {
-            $table->unsignedBigInteger('latitude')->nullable()->change();
-            $table->unsignedBigInteger('longitude')->nullable()->change();
+            $table->decimal('latitude',10,8)->nullable()->change();
+            $table->decimal('longitude',10,8)->nullable()->change();
         });
     }
 
@@ -24,8 +24,8 @@ class LatLongNullable extends Migration {
      */
     public function down() {
         Schema::table('instituicoes', function (Blueprint $table) {
-            $table->unsignedBigInteger('latitude')->nullable(false)->change();
-            $table->unsignedBigInteger('longitude')->nullable(false)->change();
+            $table->decimal('latitude')->nullable(false)->change();
+            $table->decimal('longitude')->nullable(false)->change();
         });
     }
 }
