@@ -33,6 +33,7 @@ Route::group(["prefix" => "eventos"], function () {
 
     Route::post("/store", [EventoController::class, 'store']);
     Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
+    Route::post("/update/{id}", [EventoController::class, 'update']);
 
 });
 
