@@ -6,6 +6,7 @@ use App\Models\Atividade;
 use App\Models\Evento;
 use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,19 +58,26 @@ class EventoController extends Controller {
 
         //criar atividades
         $atividades = json_decode($request->atividades);
+
         foreach ($atividades as $atv) {
             $a = new Atividade();
             $a->nome = $atv->nome;
             $a->data = $atv->data;
             $a->horario_inicio = $atv->horario_inicio;
             $a->horario_fim = $atv->horario_fim;
-            $a->tipo_atividade()->associate($atv->tipo_atividade);
+            $a->tipo_atividade()->associate($atv->tipo_atividade_id);
             $a->evento()->associate($e->id);
+            $a->nome_apresentador = $atv->nome_apresentador;
+            $a->email_apresentador = $atv->email_apresentador;
+            $apr = User::firstWhere('email', $a->email_apresentador);
+            if ($apr != null) {
+                $a->apresentador()->associate($apr->id);
+            }
             $a->save();
         }
 
 
-        return response()->json($atividades, 201);
+        return response()->json(null, 201);
     }
 
     /**
@@ -104,10 +112,55 @@ class EventoController extends Controller {
      *
      * @param Request $request
      * @param int $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function update(Request $request, $id) {
-        //
+    public function update(Request $request, $id): JsonResponse {
+        $user = Auth::user();
+        $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
+
+        $e = Evento::find($id);
+        $e->nome = $request->nome;
+        $e->breve_descricao = $request->breve_descricao;
+        $e->expectativa_participantes = $request->expectativa_participantes;
+        $e->link_evento = $request->link_evento;
+        $e->local = $request->local;
+        $e->descricao = $request->descricao;
+        $e->tipo_id = 1;
+        $e->instituicao_id = $instituicao->id;
+        $e->categoria()->associate($request->categoria_id);
+        $e->user()->associate($user->id);
+        $e->save();
+
+        //deleta as atividades que não são pertencentes mais
+        $atividades = Atividade::hydrate((array)json_decode($request->atividades));
+        $atividades = $atividades->flatten();
+        $diff = collect($e->atividades->pluck('id'))->diff($atividades->pluck('id'));
+        $e->atividades()->whereIn('id', $diff)->delete();
+
+        //Cria as novas ou atualiza as recentes
+        foreach ($atividades as $atv) {
+            $a = null;
+            if ($e->atividades->contains($atv->id)) {
+                $a = Atividade::find($atv->id);
+            } else {
+                $a = new Atividade();
+            }
+            $a->nome = $atv->nome;
+            $a->data = $atv->data;
+            $a->horario_inicio = $atv->horario_inicio;
+            $a->horario_fim = $atv->horario_fim;
+            $a->tipo_atividade()->associate($atv->tipo_atividade_id);
+            $a->evento()->associate($e->id);
+            $a->nome_apresentador = $atv->nome_apresentador;
+            $a->email_apresentador = $atv->email_apresentador;
+            $apr = User::firstWhere('email', $a->email_apresentador);
+            if ($apr != null) {
+                $a->apresentador()->associate($apr->id);
+            }
+            $a->save();
+        }
+
+        return response()->json(null, 201);
     }
 
     /**
@@ -131,7 +184,7 @@ class EventoController extends Controller {
             $pa->save();
         }
 
-        return response()->json(["Ok"], 201);
+        return response()->json(null, 201);
     }
 
     public function eventos_criados(): JsonResponse {
