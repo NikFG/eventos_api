@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class EventoController extends Controller {
     /**
@@ -42,6 +43,29 @@ class EventoController extends Controller {
      */
     public function store(Request $request): JsonResponse {
         $user = Auth::user();
+        $validator = Validator::make($request->all(), [
+            'nome' => ['required', 'string', 'min:10', 'max:100'],
+            'expectativa_participantes' => ['required', 'integer'],
+            'link_evento' => ['max:100', 'nullable'],
+            'breve_descricao' => ['required', 'string', 'max:100'],
+            'local' => ['nullable', 'max:500'],
+            'descricao' => ['nullable'],
+            'categoria_id' => ['required', 'exists:categorias,id'],
+            'atividades' => ['required'],
+            'atividades.*.nome' => ['required', 'max:255'],
+            'atividades.*.data' => ['required', 'date', 'after:today'],
+            'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
+            'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
+            'atividades.*.local' => ['nullable', 'max:200'],
+            'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
+            'atividades.*.descricao' => ['nullable'],
+            'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
+            'atividades.*.nome_apresentador' => ['required', 'string', 'min:3', 'max:255'],
+            'atividades.*.email_apresentador' => ['required', 'email'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
         $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
         $e = new Evento();
         $e->nome = $request->nome;
@@ -117,7 +141,29 @@ class EventoController extends Controller {
     public function update(Request $request, $id): JsonResponse {
         $user = Auth::user();
         $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
-
+        $validator = Validator::make($request->all(), [
+            'nome' => ['required', 'string', 'min:10', 'max:100'],
+            'expectativa_participantes' => ['required', 'integer'],
+            'link_evento' => ['max:100', 'nullable'],
+            'breve_descricao' => ['required', 'string', 'max:100'],
+            'local' => ['nullable', 'max:500'],
+            'descricao' => ['nullable'],
+            'categoria_id' => ['required', 'exists:categorias,id'],
+            'atividades' => ['required'],
+            'atividades.*.nome' => ['required', 'max:255'],
+            'atividades.*.data' => ['required', 'date', 'after:today'],
+            'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
+            'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
+            'atividades.*.local' => ['nullable', 'max:200'],
+            'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
+            'atividades.*.descricao' => ['nullable'],
+            'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
+            'atividades.*.nome_apresentador' => ['required', 'string', 'min:3', 'max:255'],
+            'atividades.*.email_apresentador' => ['required', 'email'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
         $e = Evento::find($id);
         $e->nome = $request->nome;
         $e->breve_descricao = $request->breve_descricao;
