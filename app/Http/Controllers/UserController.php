@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Evento;
 use App\Models\User;
-
+use App\Rules\Senha;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller {
     /**
@@ -28,10 +27,10 @@ class UserController extends Controller {
      */
     public function store(Request $request): JsonResponse {
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string',
-            'email' => 'required|email',
-            'cpf' => 'required|cpf',
-            'password' => 'required|min:6|string',
+            'nome' => 'required|string|min:3',
+            'email' => 'required|email|unique:users',
+            'cpf' => 'required|cpf|unique:users',
+            'password' => ['required', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)],
             'telefone' => 'required|celular_com_ddd',
         ]);
         if ($validator->fails()) {
@@ -48,7 +47,7 @@ class UserController extends Controller {
         $user->email = $request->email;
         $user->telefone = $request->telefone;
         $user->save();
-        return response()->json('Login criado com sucesso! Verifique seu email', 201);
+        return response()->json([], 201);
     }
 
     /**
@@ -81,7 +80,6 @@ class UserController extends Controller {
     public function destroy($id) {
         //
     }
-
 
 
 }

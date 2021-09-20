@@ -27,11 +27,10 @@ class InstituicaoController extends Controller {
     public function store(Request $request): JsonResponse {
         $user = Auth::user();
 
-        //TODO unique cnpj
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|max:200|min:3',
-            'cnpj' => 'required|cnpj',
-            'endereco' => 'required|max:500|string',
+            'nome' => ['required', 'string', 'max:200', 'min:3'],
+            'cnpj' => ['required', 'cnpj', 'unique:instituicoes'],
+            'endereco' => ['required', 'max:500', 'string'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
