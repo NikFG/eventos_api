@@ -24,14 +24,23 @@ class EventoController extends Controller {
     public function index(): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])->with('imagens')->with('categoria')->whereHas('atividades')->get();
+        }])
+            ->with('imagens')
+            ->with('categoria')
+            ->whereHas('atividades')
+            ->with('instituicao')
+            ->get();
         return response()->json($eventos);
     }
 
     public function porCategoria($id): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])->with('imagens')->with('categoria')->whereRelation('categoria', 'id', '=', $id)->get();
+        }])->with('imagens')->with('categoria')
+            ->whereRelation('categoria', 'id', '=', $id)
+            ->whereHas('atividades')
+            ->with('instituicao')
+            ->get();
         return response()->json($eventos);
     }
 
