@@ -122,6 +122,9 @@ class EventoController extends Controller {
     public function show($id): JsonResponse {
         $evento = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
+        }])->
+        withCount(['atividades as apresentadores_count' => function ($query) {
+            $query->select(DB::raw('count(distinct(email_apresentador))'));
         }])->find($id);
         return response()->json($evento);
     }
