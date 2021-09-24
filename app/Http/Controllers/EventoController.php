@@ -252,14 +252,8 @@ class EventoController extends Controller {
     public function compraIngresso(Request $request): JsonResponse {
         $user = Auth::user();
         $atividades_id = json_decode($request->atividades);
-        foreach ($atividades_id as $id) {
-            $pa = new ParticipanteAtividade();
-            $pa->atividade_id = $id;
-            $pa->user_id = $user->id;
-            $pa->save();
-        }
-
-        return response()->json(null, 201);
+        $user->atividades()->sync($atividades_id);
+        return response()->json($atividades_id,201);
     }
 
     public function eventos_criados(): JsonResponse {

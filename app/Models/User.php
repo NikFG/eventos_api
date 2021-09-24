@@ -29,7 +29,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail {
     ];
 
     public function atividades() {
-        return $this->hasMany(Atividade::class, 'participante_id');
+        return $this->belongsToMany(Atividade::class, 'participante_atividades','user_id');
     }
 
     public function certificados() {
