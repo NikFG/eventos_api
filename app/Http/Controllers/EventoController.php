@@ -107,6 +107,15 @@ class EventoController extends Controller {
                 $a->apresentador()->associate($apr->id);
             }
             $a->save();
+            if ($a->nome_apresentador != null) {
+                $pa = new ParticipanteAtividade();
+                $pa->atividade_id = $a->id;
+                $pa->apresentador = true;
+                if ($apr != null)
+                    $pa->user_id = $apr->id;
+                $pa->save();
+            }
+
         }
 
 
@@ -211,11 +220,20 @@ class EventoController extends Controller {
             $a->evento()->associate($e->id);
             $a->nome_apresentador = $atv->nome_apresentador;
             $a->email_apresentador = $atv->email_apresentador;
+
             $apr = User::firstWhere('email', $a->email_apresentador);
             if ($apr != null) {
                 $a->apresentador()->associate($apr->id);
             }
             $a->save();
+            if ($a->nome_apresentador != null) {
+                $pa = new ParticipanteAtividade();
+                $pa->atividade_id = $a->id;
+                $pa->apresentador = true;
+                if ($apr != null)
+                    $pa->user_id = $apr->id;
+                $pa->save();
+            }
         }
 
         return response()->json(null, 201);
@@ -231,11 +249,10 @@ class EventoController extends Controller {
         //
     }
 
-    public function compraIngresso(Request $request) {
+    public function compraIngresso(Request $request): JsonResponse {
         $user = Auth::user();
         $atividades_id = json_decode($request->atividades);
         foreach ($atividades_id as $id) {
-
             $pa = new ParticipanteAtividade();
             $pa->atividade_id = $id;
             $pa->user_id = $user->id;
@@ -252,12 +269,21 @@ class EventoController extends Controller {
         return response()->json($eventos);
     }
 
-    public function atividades_participadas(): JsonResponse {
+    public function eventos_participados(): JsonResponse {
         $user = Auth::user();
-        $atividades = Evento::whereHas('atividades', function (Builder $query) use ($user) {
+        $eventos = Evento::whereHas('atividades', function (Builder $query) use ($user) {
             $query->whereRelation('users', 'users.id', $user->id)->with('users');
         })
             ->with('atividades')
+            ->get();
+        return response()->json($eventos);
+    }
+
+    public function atividades_participadas($id): JsonResponse {
+        $user = Auth::user();
+
+        $atividades = Atividade::whereRelation('users', 'users.id', $user->id)
+            ->whereRelation('evento', 'eventos.id', $id)
             ->get();
         return response()->json($atividades);
     }
