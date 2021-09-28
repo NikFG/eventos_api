@@ -21,16 +21,58 @@ class EventoController extends Controller {
      *
      * @return JsonResponse
      */
-    public function index(): JsonResponse {
+    public function index(Request $request): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
         }])
             ->with('imagens')
             ->with('categoria')
             ->whereHas('atividades')
-            ->with('instituicao')
-            ->get();
-        return response()->json($eventos);
+            ->with('instituicao');
+
+        if ($request->q != null) {
+            $queryLower = trim(strtolower($request->q));
+            $eventos->where(function ($query) use ($queryLower) {
+                $query->where(DB::raw('lower(nome)'), 'like', '%' . $queryLower . '%')
+                    ->orWhere(DB::raw('lower(breve_descricao)'), 'like', '%' . $queryLower . '%');
+            });
+        }
+
+        if ($request->cat != null) {
+            $eventos->whereRelation('categoria', 'categorias.id', '=', $request->cat);
+        }
+
+        if ($request->instituicao != null) {
+            $eventos->whereRelation('instituicao', 'instituicoes.id', $request->instituicao);
+        }
+
+        if ($request->dataInicio != null) {
+            if ($request->dataFim != null) {
+                $eventos->whereHas('atividades', function ($q) use ($request) {
+                    $q->whereBetween('data', [$request->dataInicio, $request->dataFim]);
+                });
+            } else {
+                $eventos->whereRelation('atividades', 'atividades.data', $request->dataInicio);
+
+            }
+        }
+
+        if ($request->horarioInicio != null) {
+            $eventos->whereTime('', '', '');
+            $eventos->whereHas('atividades', function ($q) use ($request) {
+                $q->whereTime('atividades.horario_inicio', '>=', $request->horarioInicio);
+            });
+        }
+
+        if ($request->horarioFim != null) {
+            $eventos->whereTime('', '', '');
+            $eventos->whereHas('atividades', function ($q) use ($request) {
+                $q->whereTime('atividades.horario_fim', '<=', $request->horarioFim);
+            });
+        }
+
+
+        return response()->json($eventos->get());
     }
 
     public function porCategoria($id): JsonResponse {
@@ -239,7 +281,7 @@ class EventoController extends Controller {
         $user = Auth::user();
         $atividades_id = json_decode($request->atividades);
         $user->atividades()->sync($atividades_id);
-        return response()->json($atividades_id,201);
+        return response()->json($atividades_id, 201);
     }
 
     public function eventos_criados(): JsonResponse {
