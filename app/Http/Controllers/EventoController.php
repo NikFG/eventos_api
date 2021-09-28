@@ -138,20 +138,6 @@ class EventoController extends Controller {
         return response()->json($evento);
     }
 
-    public function search($query): JsonResponse {
-        $queryLower = trim(strtolower($query));
-        $eventos = Evento::with(['atividades' => function ($query) {
-            $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])
-            ->where(DB::raw('lower(nome)'), 'like', '%' . $queryLower . '%')
-            ->orWhere(DB::raw('lower(breve_descricao)'), 'like', '%' . $queryLower . '%')
-            ->orWhereHas('categoria', function ($q) use ($queryLower) {
-                $q->where(DB::raw('lower(categorias.nome)'), 'like', '%' . $queryLower . '%');
-            })
-            ->get();
-        return response()->json($eventos);
-    }
-
     /**
      * Update the specified resource in storage.
      *
