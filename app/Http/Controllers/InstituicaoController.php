@@ -12,10 +12,11 @@ class InstituicaoController extends Controller {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function index() {
-        //
+    public function index(): JsonResponse {
+        $instituicoes = Instituicao::all();
+        return response()->json($instituicoes);
     }
 
     /**
