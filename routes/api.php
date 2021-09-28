@@ -30,7 +30,6 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
     Route::get('/user', [EventoController::class, 'eventos_participados']);
     Route::get('/{id}/user/atividades', [EventoController::class, 'atividades_participadas']);
-    Route::get("/pesquisa/{query}", [EventoController::class, 'search']);
 
     Route::post("/store", [EventoController::class, 'store']);
     Route::post("/ingressos", [EventoController::class, 'compraIngresso']);
@@ -50,6 +49,7 @@ Route::group(["prefix" => "user"], function () {
 
 });
 Route::group(["prefix" => "instituicao"], function () {
+    Route::get('/',[InstituicaoController::class,'index']);
     Route::post("/store", [InstituicaoController::class, 'store']);
 });
 
