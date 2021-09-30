@@ -14,6 +14,6 @@ class Imagem extends Model {
     }
 
     public function tipo() {
-        return $this->belongsTo(TipoImagem::class);
+        return $this->belongsTo(TipoImagem::class,'tipo_imagem_id');
     }
 }
