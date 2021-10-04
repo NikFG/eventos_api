@@ -341,7 +341,13 @@ class EventoController extends Controller {
 
     public function eventos_criados(): JsonResponse {
         $user = Auth::user();
-        $eventos = Evento::with('atividades')->where('user_id', $user->id)->get();
+        $eventos = Evento::with(['atividades' => function ($query) {
+            $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
+
+        }])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($eventos);
     }
@@ -349,16 +355,17 @@ class EventoController extends Controller {
     public function eventos_participados(): JsonResponse {
         $user = Auth::user();
         $eventos = Evento::whereHas('atividades', function (Builder $query) use ($user) {
-            $query->whereRelation('users', 'users.id', $user->id)->with('users');
+            $query->whereRelation('users', 'users.id', $user->id);
         })
-            ->with('atividades')
+            ->with(['atividades' => function ($query) use ($user) {
+                $query->whereRelation('users', 'users.id', $user->id);
+            }])
             ->get();
         return response()->json($eventos);
     }
 
     public function atividades_participadas($id): JsonResponse {
         $user = Auth::user();
-
         $atividades = Atividade::whereRelation('users', 'users.id', $user->id)
             ->whereRelation('evento', 'eventos.id', $id)
             ->get();
