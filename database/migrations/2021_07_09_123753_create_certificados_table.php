@@ -15,7 +15,7 @@ class CreateCertificadosTable extends Migration {
             $table->id();
             $table->string('descricao');
             $table->string('codigo_verificacao', 255)->unique();
-            $table->date('data_demissao');
+            $table->date('data_emissao');
             $table->dateTime('data_hora_evento');
             $table->string('nome_evento', 100);
             $table->string('local', 100);
