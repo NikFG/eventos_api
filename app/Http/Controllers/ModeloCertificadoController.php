@@ -31,23 +31,23 @@ class ModeloCertificadoController extends Controller {
      * @return JsonResponse
      */
     public function store(Request $request) {
-//        $user = Auth::user();
+        $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'imagem_fundo' => ['required', 'image'],
             'titulo' => ['required', 'string', 'max:300'],
             'logo' => ['required', 'image'],
             'numero_assinaturas' => ['required', 'numeric', 'integer', 'max:6'],
-            'instituicao_id' => ['required', 'exists:instituicoes,id']
+//            'instituicao_id' => ['required', 'exists:instituicoes,id']
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($user, $request) {
 
             $m = new ModeloCertificado();
             $m->titulo = $request->titulo;
             $m->numero_assinaturas = $request->numero_assinaturas;
-            $m->instituicao()->associate($request->instituicao_id);
+            $m->instituicao()->associate($user->instituicao_id);
             $m->save();
             $path = "images/modelo/{$m->id}";
             $imagem_fundo = $request->file('imagem_fundo');
