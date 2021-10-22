@@ -56,3 +56,7 @@ Route::group(["prefix" => "instituicao"], function () {
 Route::group(["prefix" => "tipoAtividades"], function () {
     Route::get("/", [TipoAtividadeController::class, 'index']);
 });
+
+Route::group(["prefix" => "atividades"], function () {
+    Route::get('/', [AtividadeController::class, 'index']);
+    Route::get('/{id}', [AtividadeController::class, 'show']);
