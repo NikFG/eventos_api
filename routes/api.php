@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AtividadeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\InstituicaoController;
+use App\Http\Controllers\ModeloCertificadoController;
 use App\Http\Controllers\TipoAtividadeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -49,7 +52,7 @@ Route::group(["prefix" => "user"], function () {
 
 });
 Route::group(["prefix" => "instituicao"], function () {
-    Route::get('/',[InstituicaoController::class,'index']);
+    Route::get('/', [InstituicaoController::class, 'index']);
     Route::post("/store", [InstituicaoController::class, 'store']);
 });
 
@@ -60,3 +63,14 @@ Route::group(["prefix" => "tipoAtividades"], function () {
 Route::group(["prefix" => "atividades"], function () {
     Route::get('/', [AtividadeController::class, 'index']);
     Route::get('/{id}', [AtividadeController::class, 'show']);
+});
+Route::group(["prefix" => "certificados"], function () {
+    Route::get('/', [CertificadoController::class, 'index']);
+    Route::get('/{id}', [CertificadoController::class, 'show']);
+    Route::post('/atividade/{id}', [CertificadoController::class, 'store']);
+});
+
+
+Route::group(["prefix" => "modelos"], function () {
+    Route::post('/store', [ModeloCertificadoController::class, 'store']);
+});
