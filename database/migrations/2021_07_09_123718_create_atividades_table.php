@@ -23,7 +23,7 @@ class CreateAtividadesTable extends Migration {
             $table->text('descricao')->nullable();
             $table->unsignedBigInteger('evento_id');
             $table->unsignedBigInteger('tipo_atividade_id');
-            $table->unsignedBigInteger('apresentador_id');
+            $table->unsignedBigInteger('apresentador_id')->nullable();
             $table->timestamps();
         });
         Schema::table('atividades', function (Blueprint $table) {
