@@ -6,14 +6,13 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller {
     public function login(Request $request) {
         $credentials = $request->only(['email', 'password']);
 
         if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Email e/ou senha inválidos'], 401);
         }
 
         return $this->respondWithToken($token);
