@@ -49,6 +49,7 @@ Route::group(["prefix" => "user"], function () {
 
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
+    Route::post("/logout", [AuthController::class, 'logout']);
 
 });
 Route::group(["prefix" => "instituicao"], function () {

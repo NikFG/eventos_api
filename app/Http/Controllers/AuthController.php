@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 class AuthController extends Controller {
     public function login(Request $request) {
@@ -37,7 +39,7 @@ class AuthController extends Controller {
     public function logout() {
         auth('api')->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['msg' => 'Logout efetuado com sucesso']);
     }
 
     public function resetPassword(Request $request) {
