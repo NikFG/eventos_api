@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,3 +22,12 @@ Route::get('email/resend', 'VerificationController@resend')->name('verification.
 Route::view('forgot_password', 'auth.reset_password')->name('password.reset');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('envio', function () {
+    $user = new stdClass();
+    $user->nome = 'Nikollas';
+    $user->email = 'nikollasferreirag@gmail.com';
+//    $user->email = '2nightjr@gmail.com';
+//    return new \App\Mail\EnvioEmail($user);
+    \App\Jobs\EnvioEmail::dispatch($user)->delay(now()->addSeconds('3'));
+});
