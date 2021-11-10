@@ -54,7 +54,8 @@ class EnvioEmail extends Mailable {
             'modelo' => $modelo,
             'participante' => $this->user,
             'atividade' => $atividade,
-            'instituicao'=>$instituicao,
+            'instituicao' => $instituicao,
+            'data' => $data,
 
         ])->setPaper('a4', 'landscape')->setWarnings(false);
 
