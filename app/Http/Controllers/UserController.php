@@ -47,6 +47,7 @@ class UserController extends Controller {
         $user->email = $request->email;
         $user->telefone = $request->telefone;
         $user->save();
+        $user->sendEmailVerificationNotification();
         return response()->json([], 201);
     }
 

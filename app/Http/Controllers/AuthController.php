@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller {
     public function login(Request $request) {
@@ -21,17 +22,17 @@ class AuthController extends Controller {
 
     private function respondWithToken($token): JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
-//        if ($user->email_verified_at != null) {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $user,
-        ]);
-//        }
-//        JWTAuth::setToken($token)->invalidate();
-//        $user->sendEmailVerificationNotification();
-//        return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
+        if ($user->email_verified_at != null) {
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60,
+                'user' => $user,
+            ]);
+        }
+        JWTAuth::setToken($token)->invalidate();
+        $user->sendEmailVerificationNotification();
+        return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
     }
 
     public function logout() {
