@@ -26,8 +26,8 @@
             left: 0;
             height: 100%;
             width: 100%;
-            /*background-image: url('http://www.showhousesoftware.com/pd-direct.png');*/
-            background-color: red;
+            background-image: url({{\Illuminate\Support\Facades\Storage::path($modelo->imagem_fundo)}});
+
             background-position: center top;
             background-repeat: no-repeat;
             z-index: -1;
@@ -75,7 +75,8 @@
             height: 100px;
             width: 100%;
             margin-left: 0;
-            background-color: blue;
+            background-image: url({{\Illuminate\Support\Facades\Storage::path($modelo->logo)}});
+            background-repeat: no-repeat;
         }
 
         .titulo {
@@ -120,7 +121,7 @@
         }
 
         .assinatura {
-            background-color: rgba(150, 150, 150, 0.5) !important;
+            /*background-color: rgba(150, 150, 150, 0.5) !important;*/
             -webkit-print-color-adjust: exact;
             height: 1.5cm;
             text-align: center;
@@ -136,8 +137,8 @@
         }
 
         .content {
-            /*padding: 1.5cm 0.70cm 2.00cm 1.50cm;*/
-            padding: 3.5cm 0.50cm 2.00cm 0.50cm;
+            padding: 1.5cm 0.70cm 2.00cm 1.50cm;
+            /*padding: 3.5cm 0.50cm 2.00cm 0.50cm;*/
             display: block;
 
         }
@@ -165,28 +166,27 @@
             </div>
             <div class="divTexto">
                 <p class="texto">Certifico que <span
-                            class="negrito">{{$participante->nome}}</span> participou com êxito da atividade <span
-                            class="negrito">{{$atividade->nome}}</span> realizada
-                    em {{$atividade->data}} durante o evento {{$atividade->evento->nome}} com
+                        class="negrito">{{$participante->nome}}</span> participou com êxito da atividade <span
+                        class="negrito">{{$atividade->nome}}</span> realizada
+                    em {{\Carbon\Carbon::parse($atividade->data)->format("d/m/Y")}} durante o
+                    evento {{$atividade->evento->nome}} com
                     a carga horário total de {{$certificado->horas}} hora(s).</p>
             </div>
             <div class="cidade">
-                {{$instituicao->cidade}}, {{\Carbon\Carbon::parse($certificado->data_emissao)->format('d')}} de
-                {{\Carbon\Carbon::parse($certificado->data_emissao)->format('M')}}
-                de {{\Carbon\Carbon::parse($certificado->data_emissao)->format('Y')}}
+                {{$instituicao->cidade}}, {{$data}}
 
             </div>
 
             <div>
                 <div>
                     <div class="assinatura">
-                        a
+                        _________________________________________
                     </div>
                     <div class="nome_assinatura">
-                        NOME_PESSOA
+                        {{$certificado->nome}}
                     </div>
                     <div class="cargo">
-                        CARGO
+                        {{$certificado->cargo}}
                     </div>
                 </div>
             </div>
