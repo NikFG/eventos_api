@@ -80,7 +80,7 @@ class EventoController extends Controller {
         foreach ($eventos as $e) {
             if ($e->banner != null) {
                 try {
-                    $e->banner = base64_encode(Storage::disk('local')->get($e->banner));
+                    $e->banner = base64_encode(Storage::get($e->banner));
                 } catch (FileNotFoundException $error) {
                     return response()->json(null, 500);
                 }
