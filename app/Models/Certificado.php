@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Certificado extends Model {
     use HasFactory;
@@ -16,10 +17,15 @@ class Certificado extends Model {
         return $this->belongsTo(Evento::class);
     }
 
-    public function instituicao(){
+    public function instituicao() {
         return $this->belongsTo(Instituicao::class);
     }
-    public function atividade(){
+
+    public function atividade() {
         return $this->belongsTo(Atividade::class);
+    }
+
+    public function modeloCertificado(): BelongsTo {
+        return $this->belongsTo(ModeloCertificado::class);
     }
 }
