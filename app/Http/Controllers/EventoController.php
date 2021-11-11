@@ -184,11 +184,11 @@ class EventoController extends Controller {
             $path = "/images/eventos/{$e->id}";
             $banner = $request->file('banner');
             $nome_banner = $path . "/banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
-            Storage::disk('local')->put($nome_banner, $banner->getContent());
+            Storage::cloud()->put($nome_banner, $banner->getContent());
             foreach ($request->file('imagem') as $key => $i) {
                 $img = new Imagem();
                 $nome = $path . "/outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
-                Storage::disk('local')->put($nome, $i->getContent());
+                Storage::cloud()->put($nome, $i->getContent());
                 $img->imagem = $nome;
                 $img->evento()->associate($e->id);
                 $img->tipo()->associate(1);
@@ -216,7 +216,7 @@ class EventoController extends Controller {
             }])->find($id);
         if ($evento->banner != null)
             try {
-                $evento->banner = base64_encode(Storage::disk('local')->get($evento->banner));
+                $evento->banner = base64_encode(Storage::cloud()->get($evento->banner));
             } catch (FileNotFoundException $e) {
                 return response()->json(null, 500);
             }
@@ -224,7 +224,7 @@ class EventoController extends Controller {
             $imagens = array();
             try {
                 foreach ($evento->imagens as $imagem) {
-                    $imagens[] = base64_encode(Storage::disk('local')->get($imagem->imagem));
+                    $imagens[] = base64_encode(Storage::cloud()->get($imagem->imagem));
                 }
                 $evento->imagens_str = $imagens;
                 return response()->json($evento);

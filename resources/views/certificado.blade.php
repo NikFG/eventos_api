@@ -26,20 +26,13 @@
             left: 0;
             height: 100%;
             width: 100%;
-            background-image: url({{\Illuminate\Support\Facades\Storage::path($modelo->imagem_fundo)}});
+            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->imagem_fundo)}});
 
             background-position: center top;
             background-repeat: no-repeat;
             z-index: -1;
         }
 
-        /*
-        $img = base64_encode($post->image);
-
-<img src="data:image/jpg;charset=utf8;base64,{base64_encode($post->image)}"/>
-
-        "/>
-        */
         body {
             margin: 0;
             position: relative;
@@ -48,7 +41,7 @@
         html {
             font-family: system-ui, -apple-system, BlinkMacSystemFont,
             Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-            font-size: 18px;
+            font-size: 18pt;
         }
 
 
@@ -75,15 +68,18 @@
             height: 100px;
             width: 100%;
             margin-left: 0;
-            background-image: url({{\Illuminate\Support\Facades\Storage::path($modelo->logo)}});
+            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->logo)}});
             background-repeat: no-repeat;
+            background-position: center left;
+            background-size: 100% 100px;
+
         }
 
         .titulo {
             justify-content: center;
             text-align: center;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 24pt;
             margin-left: 1.5rem;
         }
 
@@ -96,6 +92,7 @@
         .texto {
             margin-left: 1rem;
             text-align: justify;
+            font-size: 16pt;
         }
 
         .negrito {
@@ -107,14 +104,14 @@
             align-content: center;
             text-align: center;
             font-weight: bolder;
-            font-size: 30px;
+            font-size: 30pt;
             margin-top: 1.2rem !important;
             width: 100%;
         }
 
         .cidade {
             text-align: right;
-            font-size: 14px;
+            font-size: 14pt;
             height: 50px;
             right: 1cm;
             display: block;
@@ -132,7 +129,7 @@
         }
 
         .cargo {
-            font-size: 10px;
+            font-size: 10pt;
             text-align: center;
         }
 
@@ -141,6 +138,13 @@
             /*padding: 3.5cm 0.50cm 2.00cm 0.50cm;*/
             display: block;
 
+        }
+
+        .codigo {
+            bottom: 0;
+            left: 0;
+            font-size: 10pt;
+            text-align: center;
         }
     </style>
 
@@ -158,9 +162,9 @@
         <div class="row imgTexto">
             <div class="logo">
             </div>
-            <div class="titulo">
-                titulo
-            </div>
+            {{--            <div class="titulo">--}}
+            {{--                titulo--}}
+            {{--            </div>--}}
             <div class="certificado">
                 CERTIFICADO
             </div>
@@ -189,13 +193,15 @@
                         {{$certificado->cargo}}
                     </div>
                 </div>
+
             </div>
+            <p class="codigo">
+                Código de verificação: {{$certificado->codigo_verificacao}}
+            </p>
         </div>
     </div>
 
 
 </div>
-
-
 </body>
 </html>

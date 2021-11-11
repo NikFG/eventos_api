@@ -33,7 +33,7 @@ class AuthController extends Controller {
         }
         JWTAuth::setToken($token)->invalidate();
         $user->sendEmailVerificationNotification();
-        return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
+        return response()->json(['error' => 'Email não verificado, olhe sua caixa de entrada ou spam'], 403);
     }
 
     public function logout() {
