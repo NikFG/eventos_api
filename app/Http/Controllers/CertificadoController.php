@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EnvioEmailJob;
-use App\Mail\EnvioEmail;
 use App\Models\Atividade;
 use App\Models\Certificado;
 use App\Models\User;
-use Barryvdh\DomPDF\PDF;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -15,8 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class CertificadoController extends Controller {
     /**
@@ -50,6 +46,7 @@ class CertificadoController extends Controller {
                     $c = new Certificado();
                     $c->descricao = $a->nome;
                     $c->data_emissao = $data->toDateString();
+                    $c->data_hora_evento = $a->data;
                     $c->nome_evento = $a->evento->nome;
                     $c->local = $a->local;
                     $c->horas = $horas;
@@ -60,8 +57,8 @@ class CertificadoController extends Controller {
                     $c->codigo_verificacao = Hash::make($a->id . '-' . $p);
                     if ($c->save()) {
                         $a->users()->updateExistingPivot($p, ['participou' => true]);
-
-                        EnvioEmailJob::dispatch($p, $a->nome, $pdf)->delay(now()->addSeconds('3'));
+                        $user = User::findOrFail($c->participante_id);
+                        EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
                     }
                 }
             });
@@ -77,10 +74,10 @@ class CertificadoController extends Controller {
 
         $user = User::findOrFail($c->participante_id);
         EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
-       /* Mail::send(new EnvioEmail($user,$c));
-        if (Mail::failures()) {
-            return response()->json(Mail::failures(), 500);
-        }*/
+        /* Mail::send(new EnvioEmail($user,$c));
+         if (Mail::failures()) {
+             return response()->json(Mail::failures(), 500);
+         }*/
 
 
         return response()->json(null, 201);

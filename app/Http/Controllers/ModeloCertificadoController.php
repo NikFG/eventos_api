@@ -52,12 +52,12 @@ class ModeloCertificadoController extends Controller {
             $path = "images/modelo/{$m->id}";
             $imagem_fundo = $request->file('imagem_fundo');
             $nome_imagem_fundo = $path . "/imagemfundo/" . Str::uuid() . '-' . $imagem_fundo->getClientOriginalName();
-            Storage::disk('local')->put($nome_imagem_fundo, $imagem_fundo->getContent());
+            Storage::cloud()->put($nome_imagem_fundo, $imagem_fundo->getContent());
             $m->imagem_fundo = $nome_imagem_fundo;
 
             $logo = $request->file('logo');
             $nome_logo = $path . "/logo/" . Str::uuid() . '-' . $logo->getClientOriginalName();
-            Storage::disk('local')->put($nome_logo, $logo->getContent());
+            Storage::cloud()->put($nome_logo, $logo->getContent());
             $m->logo = $nome_logo;
             $m->save();
         });

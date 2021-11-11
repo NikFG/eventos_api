@@ -32,6 +32,7 @@ class InstituicaoController extends Controller {
             'nome' => ['required', 'string', 'max:200', 'min:3'],
             'cnpj' => ['required', 'cnpj', 'unique:instituicoes'],
             'endereco' => ['required', 'max:500', 'string'],
+            'cidade' => ['required', 'string', 'max:100', 'min:3'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -42,8 +43,11 @@ class InstituicaoController extends Controller {
         $instituicao->cnpj = $request->cnpj;
         $instituicao->endereco = $request->endereco;
         $instituicao->logo = "";//$request->logo;
+        $instituicao->cidade = $request->cidade;
         $instituicao->administrador()->associate($user->id);
         $instituicao->save();
+        $user->instituicao()->associate($instituicao->id);
+        $user->save();
         return response()->json([], 201);
     }
 
