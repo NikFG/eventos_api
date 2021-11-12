@@ -6,11 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
+    protected $guard_name = 'api';
 
     protected $fillable = [
         'nome',
@@ -29,7 +31,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail {
     ];
 
     public function atividades() {
-        return $this->belongsToMany(Atividade::class, 'participante_atividades','user_id');
+        return $this->belongsToMany(Atividade::class, 'participante_atividades', 'user_id');
     }
 
     public function certificados() {
