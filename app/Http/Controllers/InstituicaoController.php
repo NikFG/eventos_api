@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Instituicao;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +49,7 @@ class InstituicaoController extends Controller {
         $instituicao->save();
         $user->instituicao()->associate($instituicao->id);
         $user->save();
+        $user->assignRole('administrador');
         return response()->json([], 201);
     }
 
@@ -80,5 +82,14 @@ class InstituicaoController extends Controller {
      */
     public function destroy($id) {
         //
+    }
+
+    public function addUsusario($id) {
+        $admin = Auth::user();
+        $user = User::find($id);
+        $user->instituicao()->associate($admin->instituicao->id);
+        $user->save();
+        $user->assignRole('associado');
+        return response()->json([], 201);
     }
 }
