@@ -77,15 +77,15 @@ class EventoController extends Controller {
         }
 
         $eventos = $eventos->get();
-        foreach ($eventos as $e) {
-            if ($e->banner != null) {
-                try {
-                    $e->banner = base64_encode(Storage::get($e->banner));
-                } catch (FileNotFoundException $error) {
-                    return response()->json(null, 500);
-                }
-            }
-        }
+        /* foreach ($eventos as $e) {
+             if ($e->banner != null) {
+                 try {
+                     $e->banner = base64_encode(Storage::get($e->banner));
+                 } catch (FileNotFoundException $error) {
+                     return response()->json(null, 500);
+                 }
+             }
+         }*/
         return response()->json($eventos);
     }
 
@@ -145,7 +145,7 @@ class EventoController extends Controller {
             $e->descricao = $request->descricao;
             $e->tipo_id = 1;
             $e->instituicao_id = $instituicao->id;
-
+            $e->link_evento = '';
             $e->categoria()->associate($request->categoria_id);
             $e->user()->associate($user->id);
             $e->save();
@@ -185,16 +185,17 @@ class EventoController extends Controller {
             $banner = $request->file('banner');
             $nome_banner = $path . "/banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
             Storage::cloud()->put($nome_banner, $banner->getContent());
+
             foreach ($request->file('imagem') as $key => $i) {
                 $img = new Imagem();
                 $nome = $path . "/outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
                 Storage::cloud()->put($nome, $i->getContent());
-                $img->imagem = $nome;
+                $img->imagem = Storage::cloud()->url($nome);
                 $img->evento()->associate($e->id);
                 $img->tipo()->associate(1);
                 $img->save();
             }
-            $e->banner = $nome_banner;
+            $e->banner = Storage::cloud()->url($nome_banner);
             $e->save();
         });
 
@@ -210,17 +211,18 @@ class EventoController extends Controller {
     public function show(int $id): JsonResponse {
         $evento = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }], 'imagens')
+        }])
             ->withCount(['atividades as apresentadores_count' => function ($query) {
                 $query->select(DB::raw('count(distinct(email_apresentador))'));
-            }])->find($id);
-        if ($evento->banner != null)
-            try {
-                $evento->banner = base64_encode(Storage::cloud()->get($evento->banner));
-            } catch (FileNotFoundException $e) {
-                return response()->json(null, 500);
-            }
-        if ($evento->imagens != null) {
+            }])->with('imagens')
+            ->find($id);
+        /* if ($evento->banner != null)
+             try {
+                 $evento->banner = base64_encode(Storage::cloud()->get($evento->banner));
+             } catch (FileNotFoundException $e) {
+                 return response()->json(null, 500);
+             }*/
+        /*if ($evento->imagens != null) {
             $imagens = array();
             try {
                 foreach ($evento->imagens as $imagem) {
@@ -231,7 +233,7 @@ class EventoController extends Controller {
             } catch (FileNotFoundException $e) {
                 return response()->json($e->getTrace(), 500);
             }
-        }
+        }*/
         return response()->json($evento);
     }
 
