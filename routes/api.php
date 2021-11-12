@@ -55,7 +55,7 @@ Route::group(["prefix" => "user"], function () {
 });
 Route::group(["prefix" => "instituicao"], function () {
     Route::get('/', [InstituicaoController::class, 'index']);
-    Route::post("/store", [InstituicaoController::class, 'store'])->middleware('role:administrador');
+    Route::post("/store", [InstituicaoController::class, 'store'])->middleware('role:usuario');
     Route::post("/addUsuario/{id}", [InstituicaoController::class, 'addUsuario'])->can('cadastrar_instituicao');
 });
 

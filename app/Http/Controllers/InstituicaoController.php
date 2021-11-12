@@ -47,9 +47,9 @@ class InstituicaoController extends Controller {
         $instituicao->cidade = $request->cidade;
         $instituicao->administrador()->associate($user->id);
         $instituicao->save();
-        $user->instituicao()->associate($instituicao->id);
+        $user->instituicao_id = $instituicao->id;
         $user->save();
-        $user->assignRole('administrador');
+        $user->assignRole('admin');
         return response()->json([], 201);
     }
 
