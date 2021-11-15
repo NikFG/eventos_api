@@ -34,10 +34,10 @@ class ModeloCertificadoController extends Controller {
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'imagem_fundo' => ['required', 'image'],
-            'titulo' => ['required', 'string', 'max:300'],
+            'assinatura' => ['required', 'image'],
             'logo' => ['required', 'image'],
-            'numero_assinaturas' => ['required', 'numeric', 'integer', 'max:6'],
-//            'instituicao_id' => ['required', 'exists:instituicoes,id']
+            'nome_assinatura' => ['required', 'string', 'max:100'],
+            'cargo_assinatura' => ['required', 'string', 'max:50'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -45,20 +45,28 @@ class ModeloCertificadoController extends Controller {
         DB::transaction(function () use ($user, $request) {
 
             $m = new ModeloCertificado();
-            $m->titulo = $request->titulo;
-            $m->numero_assinaturas = $request->numero_assinaturas;
+            $m->nome_assinatura = $request->nome_assinatura;
+            $m->cargo_assinatura = $request->cargo_assinatura;
             $m->instituicao()->associate($user->instituicao_id);
             $m->save();
+
             $path = "images/modelo/{$m->id}";
             $imagem_fundo = $request->file('imagem_fundo');
             $nome_imagem_fundo = $path . "/imagemfundo/" . Str::uuid() . '-' . $imagem_fundo->getClientOriginalName();
             Storage::cloud()->put($nome_imagem_fundo, $imagem_fundo->getContent());
-            $m->imagem_fundo = $nome_imagem_fundo;
 
             $logo = $request->file('logo');
             $nome_logo = $path . "/logo/" . Str::uuid() . '-' . $logo->getClientOriginalName();
             Storage::cloud()->put($nome_logo, $logo->getContent());
-            $m->logo = $nome_logo;
+
+            $assinatura = $request->file('assinatura');
+            $path_assinatura = $path . "/assinatura/" . Str::uuid() . '-' . $assinatura->getClientOriginalName();
+            Storage::cloud()->put($path_assinatura, $assinatura->getContent());
+
+            $m->imagem_fundo = Storage::cloud()->url($nome_imagem_fundo);
+            $m->logo = Storage::cloud()->url($nome_logo);
+            $m->assinatura = Storage::cloud()->url($path_assinatura);
+
             $m->save();
         });
         return response()->json(null, 201);
