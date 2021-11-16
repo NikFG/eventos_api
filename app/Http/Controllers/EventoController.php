@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Apresentador;
 use App\Models\Atividade;
 use App\Models\Evento;
 use App\Models\Imagem;
@@ -128,12 +129,14 @@ class EventoController extends Controller {
             'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
             'atividades.*.descricao' => ['nullable'],
             'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
-            'atividades.*.nome_apresentador' => ['required', 'string', 'min:3', 'max:255'],
-            'atividades.*.email_apresentador' => ['required', 'email'],
+            'atividades.*.apresentadores' => ['required'],
+            'atividades.*.apresentadores.*.nome' => ['required', 'max:100', 'min:3', 'string'],
+            'atividades.*.apresentadores.*.email' => ['required', 'email', 'max:100'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+
         DB::transaction(function () use ($user, $request) {
             $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
             $e = new Evento();
@@ -164,24 +167,27 @@ class EventoController extends Controller {
                 $a->local = $atv->local;
                 $a->tipo_atividade()->associate($atv->tipo_atividade_id);
                 $a->evento()->associate($e->id);
-                $a->nome_apresentador = $atv->nome_apresentador;
-                $a->email_apresentador = $atv->email_apresentador;
-                $apr = User::firstWhere('email', $a->email_apresentador);
-                if ($apr != null) {
-                    $a->apresentador()->associate($apr->id);
-                }
                 $a->save();
-                if ($a->nome_apresentador != null) {
+                foreach ($atv->apresentadores as $apresentador) {
+                    $ap = new Apresentador();
+                    $ap->nome = $apresentador->nome;
+                    $ap->email = $apresentador->email;
+                    $apr = User::firstWhere('email', $apresentador->email);
                     $pa = new ParticipanteAtividade();
                     $pa->atividade_id = $a->id;
                     $pa->apresentador = true;
-                    if ($apr != null)
+                    if ($apr != null) {
                         $pa->user_id = $apr->id;
+                        $ap->user()->associate($apr->id);
+                    }
+                    $ap->atividade()->associate($a->id);
                     $pa->save();
+                    $ap->save();
                 }
 
+
             }
-            $path = "/images/eventos/{$e->id}";
+            $path = "images/eventos/{$e->id}/";
             $banner = $request->file('banner');
             $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
             Storage::cloud()->put($nome_banner, $banner->getContent());
@@ -210,30 +216,13 @@ class EventoController extends Controller {
      */
     public function show(int $id): JsonResponse {
         $evento = Evento::with(['atividades' => function ($query) {
-            $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
+            $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome")->with('apresentadores');
         }])
-            ->withCount(['atividades as apresentadores_count' => function ($query) {
-                $query->select(DB::raw('count(distinct(email_apresentador))'));
+            ->withCount(['atividades as apresentadores_count' => function (Builder $query) {
+                $query->select(DB::raw('count(distinct(apresentadores.email))'))
+                    ->join('apresentadores', 'apresentadores.atividade_id', '=', 'atividades.id');
             }])->with('imagens')
             ->find($id);
-        /* if ($evento->banner != null)
-             try {
-                 $evento->banner = base64_encode(Storage::cloud()->get($evento->banner));
-             } catch (FileNotFoundException $e) {
-                 return response()->json(null, 500);
-             }*/
-        /*if ($evento->imagens != null) {
-            $imagens = array();
-            try {
-                foreach ($evento->imagens as $imagem) {
-                    $imagens[] = base64_encode(Storage::cloud()->get($imagem->imagem));
-                }
-                $evento->imagens_str = $imagens;
-                return response()->json($evento);
-            } catch (FileNotFoundException $e) {
-                return response()->json($e->getTrace(), 500);
-            }
-        }*/
         return response()->json($evento);
     }
 
