@@ -38,7 +38,7 @@ class CertificadoController extends Controller {
         $participantes = json_decode($request->participantes);
         $horario_inicio = Carbon::parse($a->horario_inicio);
         $horario_fim = Carbon::parse($a->horario_fim);
-        $horas = $horario_fim->diffInHours($horario_inicio);
+        $horas = $horario_fim->diff($horario_inicio);
         try {
             DB::transaction(function () use ($horas, $a, $participantes) {
                 foreach ($participantes as $p) {
@@ -49,7 +49,7 @@ class CertificadoController extends Controller {
                     $c->data_hora_evento = $a->data;
                     $c->nome_evento = $a->evento->nome;
                     $c->local = $a->local;
-                    $c->horas = $horas;
+                    $c->horas = $horas->format('%H:%I');
                     $c->participante()->associate($p);
                     $c->evento()->associate($a->evento_id);
                     $c->instituicao()->associate($a->evento->instituicao_id);

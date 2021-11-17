@@ -18,8 +18,8 @@ class Atividade extends Model {
         return $this->belongsTo(Evento::class);
     }
 
-    public function apresentador() {
-        return $this->belongsTo(User::class, 'apresentador_id');
+    public function apresentadores() {
+        return $this->hasMany(Apresentador::class);
     }
 
     public function tipo_atividade() {

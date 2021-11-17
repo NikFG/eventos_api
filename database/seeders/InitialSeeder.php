@@ -83,6 +83,19 @@ class InitialSeeder extends Seeder {
         $u->telefone = "(99) 99999-9999";
 
         $u->save();
+        $u->assignRole('admin');
+        $u->assignRole('usuario');
         $u->assignRole('super-admin');
+
+        $i = new \App\Models\Instituicao();
+        $i->nome = "teste";
+        $i->cnpj = "36.119.137/0001-07";
+        $i->endereco = "teste";
+        $i->cidade = "Divinópolis";
+        $i->logo = "";
+        $i->administrador()->associate($u);
+        $i->save();
+        $u->instituicao_id = $i->id;
+        $u->save();
     }
 }
