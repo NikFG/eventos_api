@@ -50,7 +50,8 @@ Route::group(["prefix" => "user"], function () {
 
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
-    Route::post("/logout", [AuthController::class, 'logout'])->middleware('role:usuario');;
+    Route::post("/logout", [AuthController::class, 'logout'])->middleware('role:usuario');
+    Route::get('/fromToken', [UserController::class, 'fromToken'])->middleware('role:usuario');
 
 });
 Route::group(["prefix" => "instituicao"], function () {
