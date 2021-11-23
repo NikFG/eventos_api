@@ -8,6 +8,7 @@ use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Traits\Conditionable;
 
@@ -70,6 +71,9 @@ class Senha implements Rule
      * @var bool
      */
     protected $uncompromised = false;
+
+
+    protected $isChange = false;
 
     /**
      * The number of times a password can appear in data leaks before being consider compromised.
@@ -245,6 +249,11 @@ class Senha implements Rule
         return $this;
     }
 
+    public function change() {
+        $this->change = true;
+        return $this;
+    }
+
     /**
      * Determine if the validation rule passes.
      *
@@ -279,6 +288,10 @@ class Senha implements Rule
             $this->fail('A :attribute precisa conter pelo menos um número.');
         }
 
+        if ($this->change && Hash::check($value, auth()->user()->password)) {
+            $this->fail('A :attribute não pode ser igual a anterior.');
+        }
+
         if (!empty($this->messages)) {
             return false;
         }
@@ -288,7 +301,7 @@ class Senha implements Rule
                 'threshold' => $this->compromisedThreshold,
             ])) {
             return $this->fail(
-                'A senha :attribute foi encontrada em um vazamento de dados. Favor selecione uma :attribute diferente.'
+                'A :attribute foi encontrada em um vazamento de dados. Favor selecione uma :attribute diferente.'
             );
         }
 
@@ -319,4 +332,6 @@ class Senha implements Rule
 
         return false;
     }
+
+
 }
