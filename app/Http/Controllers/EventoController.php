@@ -35,7 +35,8 @@ class EventoController extends Controller {
         }])
             ->with('categoria')
             ->whereHas('atividades')
-            ->with('instituicao');
+            ->with('instituicao')
+            ->orderBy('created_at', 'desc');
 
         if ($request->q != null) {
             $queryLower = trim(strtolower($request->q));
@@ -77,7 +78,7 @@ class EventoController extends Controller {
             });
         }
 
-        $eventos = $eventos->get();
+
         /* foreach ($eventos as $e) {
              if ($e->banner != null) {
                  try {
@@ -87,7 +88,8 @@ class EventoController extends Controller {
                  }
              }
          }*/
-        return response()->json($eventos);
+        //        $eventos = $eventos->paginate(10);
+        return response()->json($eventos->get());
     }
 
     public function porCategoria($id): JsonResponse {
