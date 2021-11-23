@@ -33,6 +33,7 @@ class ModeloCertificadoController extends Controller {
     public function store(Request $request) {
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
+            'titulo' => ['required', 'string', 'max:255'],
             'imagem_fundo' => ['required', 'image'],
             'assinatura' => ['required', 'image'],
             'logo' => ['required', 'image'],
@@ -47,6 +48,7 @@ class ModeloCertificadoController extends Controller {
             $m = new ModeloCertificado();
             $m->nome_assinatura = $request->nome_assinatura;
             $m->cargo_assinatura = $request->cargo_assinatura;
+            $m->titulo = $request->titulo;
             $m->instituicao()->associate($user->instituicao_id);
             $m->save();
 
