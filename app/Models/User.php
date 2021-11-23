@@ -43,7 +43,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail {
     }
 
     public function instituicao() {
-        return $this->hasOne(Instituicao::class, 'administrador_id');
+        return $this->belongsTo(Instituicao::class);
     }
 
 

@@ -6,8 +6,8 @@ use App\Models\User;
 use App\Rules\Senha;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller {
     /**
@@ -67,10 +67,29 @@ class UserController extends Controller {
      *
      * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function update(Request $request, $id) {
-        //
+    public function update(Request $request, int $id): JsonResponse {
+        Auth::user();
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required|string|min:3',
+            'telefone' => 'required|celular_com_ddd',
+            'password' => ['nullable', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)->change()],
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+        $user = User::find($id);
+        if ($user == null) {
+            return response()->json([], 404);
+        }
+        $user->nome = $request->nome;
+        $user->telefone = $request->telefone;
+        if ($request->password != null) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->save();
+        return response()->json([], 201);
     }
 
     /**
@@ -80,8 +99,12 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //
+
     }
 
+    public function fromToken() {
+        $user = Auth::user();
+        return response()->json($user);
+    }
 
 }
