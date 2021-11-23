@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(["prefix" => "eventos"], function () {
     Route::get("/", [EventoController::class, 'index']);
     Route::get("/{id}", [EventoController::class, 'show'])->where('id', '[0-9]+');
-    Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');;
+    Route::get("/categorias/{id}", [EventoController::class, 'porCategoria'])->where('id', '[0-9]+');
 
     Route::get('/user', [EventoController::class, 'eventos_participados'])->middleware('role:usuario');
     Route::post("/ingressos", [EventoController::class, 'compraIngresso'])->middleware('role:usuario');
@@ -50,14 +50,18 @@ Route::group(["prefix" => "user"], function () {
 
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
+
+    Route::post('/update/{id}', [UserController::class, 'update'])->middleware('role:usuario')->where('id', '[0-9]+');
     Route::post("/logout", [AuthController::class, 'logout'])->middleware('role:usuario');
     Route::get('/fromToken', [UserController::class, 'fromToken'])->middleware('role:usuario');
-
 });
+
 Route::group(["prefix" => "instituicao"], function () {
     Route::get('/', [InstituicaoController::class, 'index']);
+    Route::get('/user', [InstituicaoController::class, 'showByUser'])->can('gerenciar_instituicao');
     Route::post("/store", [InstituicaoController::class, 'store'])->middleware('role:usuario');
-    Route::post("/addUsuario/{id}", [InstituicaoController::class, 'addUsusario'])->can('cadastrar_instituicao');
+    Route::post("/addUsuario", [InstituicaoController::class, 'addUsusario'])->can('cadastrar_instituicao');
+    Route::post("/update/{id}", [InstituicaoController::class, 'update'])->middleware('role:admin')->where('id', '[0-9]+');
 });
 
 Route::group(["prefix" => "tipoAtividades"], function () {
@@ -76,10 +80,12 @@ Route::group(["prefix" => "certificados", "middleware" => "role:usuario"], funct
     Route::get('/{id}', [CertificadoController::class, 'show'])->where('id', '[0-9]+');;
     Route::post('/atividade/{id}', [CertificadoController::class, 'store'])->can('gerenciar_certificado');
     Route::post('/{id}/gerar', [CertificadoController::class, 'gerarCertificado'])->where('id', '[0-9]+')->can('gerenciar_certificado');
+    Route::post('/{id}/gerarByAtividade', [CertificadoController::class, 'gerarCertificadoByUserAtividade'])->where('id', '[0-9]+')->middleware('role:usuario');
 });
 
 
 Route::group(["prefix" => "modelos"], function () {
+    Route::get('/', [ModeloCertificadoController::class, 'index']);
     Route::post('/store', [ModeloCertificadoController::class, 'store'])->can('gerenciar_certificado');
 });
 
