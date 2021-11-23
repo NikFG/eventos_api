@@ -68,10 +68,28 @@ class InstituicaoController extends Controller {
      *
      * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function update(Request $request, $id) {
-        //
+    public function update(Request $request, $id): JsonResponse {
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'nome' => ['required', 'string', 'max:200', 'min:3'],
+            'endereco' => ['required', 'max:500', 'string'],
+            'cidade' => ['required', 'string', 'max:100', 'min:3'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $instituicao = Instituicao::find($id);
+
+        $instituicao->nome = $request->nome;
+        $instituicao->endereco = $request->endereco;
+        $instituicao->cidade = $request->cidade;
+        $instituicao->save();
+        return response()->json([], 201);
     }
 
     /**
@@ -84,12 +102,19 @@ class InstituicaoController extends Controller {
         //
     }
 
-    public function addUsusario($id) {
+    //TODO VALIDAÇÃO
+    public function addUsusario(Request $request) {
         $admin = Auth::user();
-        $user = User::find($id);
-        $user->instituicao()->associate($admin->instituicao->id);
+        $user = User::where('email', $request->email)->first();
+        $user->instituicao()->associate($admin->instituicao_id);
         $user->save();
         $user->assignRole('associado');
         return response()->json([], 201);
+    }
+
+    public function showByUser() {
+        $user = Auth::user();
+        $instituicao = Instituicao::find($user->instituicao_id);
+        return response()->json($instituicao);
     }
 }
