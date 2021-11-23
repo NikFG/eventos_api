@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EnvioEmailJob;
+use App\Mail\EnvioEmail;
 use App\Models\Atividade;
 use App\Models\Certificado;
 use App\Models\User;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class CertificadoController extends Controller {
     /**
@@ -69,7 +71,7 @@ class CertificadoController extends Controller {
         return response()->json(null, 201);
     }
 
-    public function gerarCertificado(Request $request, int $id): JsonResponse {
+    public function gerarCertificado(int $id): JsonResponse {
         $c = Certificado::find($id);
 
         $user = User::findOrFail($c->participante_id);
@@ -80,6 +82,24 @@ class CertificadoController extends Controller {
          }*/
 
 
+        return response()->json(null, 201);
+    }
+
+    /*  public function gerarCertificadoByAtividade(int $id): JsonResponse {
+          $a = Atividade::find($id);
+          $certificados = Certificado::where('atividade_id', $a->id)->get();
+          foreach ($certificados as $c) {
+              $user = User::findOrFail($c->participante_id);
+              EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
+          }
+          return response()->json(null, 201);
+      }*/
+    public function gerarCertificadoByUserAtividade(int $id): JsonResponse {
+        $user = Auth::user();
+        $atividade = Atividade::whereRelation('users', 'participou', '=', true)->find($id);
+        $certificado = Certificado::where('atividade_id', $atividade->id)->where('participante_id', $user->id)->first();
+        $user = User::findOrFail($certificado->participante_id);
+        Mail::send(new EnvioEmail($user, $certificado));
         return response()->json(null, 201);
     }
 
