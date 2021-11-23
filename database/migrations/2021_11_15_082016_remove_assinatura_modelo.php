@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class RemoveTituloAssinaturaModelo extends Migration {
+class RemoveAssinaturaModelo extends Migration {
     /**
      * Run the migrations.
      *
@@ -11,7 +11,6 @@ class RemoveTituloAssinaturaModelo extends Migration {
      */
     public function up() {
         Schema::table('modelo_certificados', function ($table) {
-            $table->dropColumn('titulo');
             $table->dropColumn('numero_assinaturas');
         });
     }
@@ -23,7 +22,6 @@ class RemoveTituloAssinaturaModelo extends Migration {
      */
     public function down() {
         Schema::table('modelo_certificados', function ($table) {
-            $table->string('titulo');
             $table->integer('numero_assinaturas');
         });
     }
