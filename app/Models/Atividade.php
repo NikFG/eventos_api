@@ -31,7 +31,11 @@ class Atividade extends Model {
     }
 
     public function users() {
-        return $this->belongsToMany(User::class, ParticipanteAtividade::class)->withPivot(['participou', 'apresentador']);
+        return $this->belongsToMany(User::class, ParticipanteAtividade::class)->withPivot(['participou', 'apresentador_id']);
+    }
+
+    public function participantes() {
+        return $this->hasMany(ParticipanteAtividade::class);
     }
 
 }
