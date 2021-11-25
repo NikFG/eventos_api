@@ -187,10 +187,10 @@
                         _________________________________________
                     </div>
                     <div class="nome_assinatura">
-                        {{$certificado->nome}}
+                        {{$modelo->nome_assinatura}}
                     </div>
                     <div class="cargo">
-                        {{$certificado->cargo}}
+                        {{$modelo->cargo_assinatura}}
                     </div>
                 </div>
 
