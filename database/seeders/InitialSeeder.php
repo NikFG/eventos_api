@@ -97,5 +97,39 @@ class InitialSeeder extends Seeder {
         $i->save();
         $u->instituicao_id = $i->id;
         $u->save();
+
+        $u = new \App\Models\User();
+        $u->nome = "José da Silva";
+        $u->email = "nikollasferreira@hotmail.com";
+        $u->cpf = "123.456.789-10";
+        $u->email_verified_at = now();
+        $u->password = bcrypt('123456');
+        $u->telefone = "(99) 99999-9999";
+
+        $u->save();
+        $u->assignRole('usuario');
+
+        $u = new \App\Models\User();
+        $u->nome = "Maria da Silva";
+        $u->email = "a@b.com";
+        $u->cpf = "123.456.789-20";
+        $u->email_verified_at = now();
+        $u->password = bcrypt('123456');
+        $u->telefone = "(99) 99999-9999";
+
+        $u->save();
+        $u->assignRole('usuario');
+
+
+
+        $e = new \App\Models\Evento();
+        $e->nome = "teste";
+        $e->descricao = "teste";
+        $e->expectativa_participantes = 1;
+        $e->breve_descricao = "teste";
+        $e->categoria_id = 1;
+        $e->instituicao_id = $i->id;
+        $e->tipo_id = 1;
+        $e->banner = "";
     }
 }
