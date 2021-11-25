@@ -72,6 +72,7 @@ Route::group(["prefix" => "tipoAtividades"], function () {
 Route::group(["prefix" => "atividades"], function () {
     Route::get('/', [AtividadeController::class, 'index']);
     Route::get('/{id}', [AtividadeController::class, 'show']);
+    Route::get('/participantes/{id}', [AtividadeController::class, 'participantesApresentadores'])->where('id', '[0-9]+');
 });
 
 
