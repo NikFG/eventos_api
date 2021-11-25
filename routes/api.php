@@ -72,6 +72,7 @@ Route::group(["prefix" => "tipoAtividades"], function () {
 Route::group(["prefix" => "atividades"], function () {
     Route::get('/', [AtividadeController::class, 'index']);
     Route::get('/{id}', [AtividadeController::class, 'show']);
+    Route::get('/participantes/{id}', [AtividadeController::class, 'participantesApresentadores'])->where('id', '[0-9]+');
 });
 
 
@@ -86,6 +87,7 @@ Route::group(["prefix" => "certificados", "middleware" => "role:usuario"], funct
 
 Route::group(["prefix" => "modelos"], function () {
     Route::get('/', [ModeloCertificadoController::class, 'index']);
+    Route::get('/instituicao/{id}', [ModeloCertificadoController::class, 'indexByInstituicao']);
     Route::post('/store', [ModeloCertificadoController::class, 'store'])->can('gerenciar_certificado');
 });
 

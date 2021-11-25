@@ -20,7 +20,7 @@ class ModeloCertificadoController extends Controller {
      */
     public function index(): JsonResponse {
         $u = Auth::user();
-        $modelos = ModeloCertificado::with('certificados.eventos')->where('instituicao_id', $u->instituicao_id)->get();
+        $modelos = ModeloCertificado::with('certificados.evento')->where('instituicao_id', $u->instituicao_id)->get();
         return response()->json($modelos);
     }
 
@@ -105,5 +105,10 @@ class ModeloCertificadoController extends Controller {
      */
     public function destroy($id) {
         //
+    }
+
+    public function indexByInstituicao(int $id): JsonResponse {
+        $modelos = ModeloCertificado::with('certificados.evento')->where('instituicao_id', $id)->get();
+        return response()->json($modelos);
     }
 }

@@ -16,4 +16,8 @@ class ParticipanteAtividade extends Model {
         return $this->belongsToMany(User::class, ParticipanteAtividade::class, 'user_id');
     }
 
+    public function apresentadores() {
+        return $this->belongsToMany(Apresentador::class, ParticipanteAtividade::class, 'apresentador_id');
+    }
+
 }
