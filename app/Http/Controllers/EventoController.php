@@ -171,20 +171,20 @@ class EventoController extends Controller {
                 $a->evento()->associate($e->id);
                 $a->save();
                 foreach ($atv->apresentadores as $apresentador) {
-                    $ap = new Apresentador();
-                    $ap->nome = $apresentador->nome;
-                    $ap->email = $apresentador->email;
-                    $apr = User::firstWhere('email', $apresentador->email);
+                    $apr = new Apresentador();
+                    $apr->nome = $apresentador->nome;
+                    $apr->email = $apresentador->email;
+                    $apr_user = User::firstWhere('email', $apresentador->email);
                     $pa = new ParticipanteAtividade();
                     $pa->atividade_id = $a->id;
-                    $pa->apresentador = true;
-                    if ($apr != null) {
-                        $pa->user_id = $apr->id;
-                        $ap->user()->associate($apr->id);
+                    if ($apr_user != null) {
+                        $pa->user_id = $apr_user->id;
+                        $apr->user()->associate($apr_user->id);
                     }
-                    $ap->atividade()->associate($a->id);
+                    $apr->atividade()->associate($a->id);
+                    $apr->save();
+                    $pa->apresentador_id = $apr->id;
                     $pa->save();
-                    $ap->save();
                 }
 
 
