@@ -41,8 +41,11 @@ class CertificadoController extends Controller {
         $horario_inicio = Carbon::parse($a->horario_inicio);
         $horario_fim = Carbon::parse($a->horario_fim);
         $horas = $horario_fim->diff($horario_inicio);
+        $modelo = $request->modelo;
+        $horas = $horas->format('%H:%I');
+
         try {
-            DB::transaction(function () use ($horas, $a, $participantes) {
+            DB::transaction(function () use ($modelo, $horas, $a, $participantes) {
                 foreach ($participantes as $p) {
                     $data = Carbon::now();
                     $c = new Certificado();
@@ -51,12 +54,13 @@ class CertificadoController extends Controller {
                     $c->data_hora_evento = $a->data;
                     $c->nome_evento = $a->evento->nome;
                     $c->local = $a->local;
-                    $c->horas = $horas->format('%H:%I');
+                    $c->horas = $horas;
                     $c->participante()->associate($p);
                     $c->evento()->associate($a->evento_id);
                     $c->instituicao()->associate($a->evento->instituicao_id);
                     $c->atividade()->associate($a->id);
                     $c->codigo_verificacao = Hash::make($a->id . '-' . $p);
+                    $c->modeloCertificado()->associate($modelo);
                     if ($c->save()) {
                         $a->users()->updateExistingPivot($p, ['participou' => true]);
                         $user = User::findOrFail($c->participante_id);
