@@ -140,7 +140,7 @@ class EventoController extends Controller {
         }
 
         DB::transaction(function () use ($user, $request) {
-            $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
+            $instituicao = Instituicao::find($user->instituicao_id);
             $e = new Evento();
             $e->nome = $request->nome;
             $e->breve_descricao = $request->breve_descricao;
@@ -181,7 +181,6 @@ class EventoController extends Controller {
                         $pa->user_id = $apr_user->id;
                         $apr->user()->associate($apr_user->id);
                     }
-                    $apr->atividade()->associate($a->id);
                     $apr->save();
                     $pa->apresentador_id = $apr->id;
                     $pa->save();
@@ -221,8 +220,9 @@ class EventoController extends Controller {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome")->with('apresentadores');
         }])
             ->withCount(['atividades as apresentadores_count' => function (Builder $query) {
-                $query->select(DB::raw('count(distinct(apresentadores.email))'))
-                    ->join('apresentadores', 'apresentadores.atividade_id', '=', 'atividades.id');
+                $query->select(DB::raw('count(distinct(participante_atividades.apresentador_id))'))
+                    ->join('participante_atividades', 'participante_atividades.atividade_id', '=', 'atividades.id')
+                    ->whereNotNull('participante_atividades.apresentador_id');
             }])->with('imagens')
             ->find($id);
         return response()->json($evento);
@@ -237,15 +237,14 @@ class EventoController extends Controller {
      */
     public function update(Request $request, int $id): JsonResponse {
         $user = Auth::user();
-        $instituicao = Instituicao::whereRelation('administrador', 'id', $user->id)->first();
         $validator = Validator::make($request->all(), [
             'nome' => ['required', 'string', 'min:10', 'max:100'],
-            'expectativa_participantes' => ['required', 'integer'],
             'link_evento' => ['max:100', 'nullable'],
             'breve_descricao' => ['required', 'string', 'max:100'],
             'local' => ['nullable', 'max:500'],
             'descricao' => ['nullable'],
             'categoria_id' => ['required', 'exists:categorias,id'],
+            'banner' => ['nullable', 'image'],
             'atividades' => ['required'],
             'atividades.*.nome' => ['required', 'max:255'],
             'atividades.*.data' => ['required', 'date', 'after:today'],
@@ -255,62 +254,98 @@ class EventoController extends Controller {
             'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
             'atividades.*.descricao' => ['nullable'],
             'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
-            'atividades.*.nome_apresentador' => ['required', 'string', 'min:3', 'max:255'],
-            'atividades.*.email_apresentador' => ['required', 'email'],
+            'atividades.*.apresentadores' => ['required'],
+            'atividades.*.apresentadores.*.nome' => ['required', 'max:100', 'min:3', 'string'],
+            'atividades.*.apresentadores.*.email' => ['required', 'email', 'max:100'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        $e = Evento::find($id);
-        $e->nome = $request->nome;
-        $e->breve_descricao = $request->breve_descricao;
-        $e->expectativa_participantes = $request->expectativa_participantes;
-        $e->link_evento = $request->link_evento;
-        $e->local = $request->local;
-        $e->descricao = $request->descricao;
-        $e->tipo_id = 1;
-        $e->instituicao_id = $instituicao->id;
-        $e->categoria()->associate($request->categoria_id);
-        $e->user()->associate($user->id);
-        $e->save();
+        DB::transaction(function () use ($id, $user, $request) {
+            $instituicao = Instituicao::find($user->instituicao_id);
+            $e = Evento::find($id);
+            $e->nome = $request->nome;
+            $e->breve_descricao = $request->breve_descricao;
+            $e->local = $request->local;
+            $e->descricao = $request->descricao;
+            $e->instituicao_id = $instituicao->id;
+            $e->categoria()->associate($request->categoria_id);
+            $e->save();
 
-        //deleta as atividades que não são pertencentes mais
-        $atividades = Atividade::hydrate((array)json_decode($request->atividades));
-        $atividades = $atividades->flatten();
-        $diff = collect($e->atividades->pluck('id'))->diff($atividades->pluck('id'));
-        $e->atividades()->whereIn('id', $diff)->delete();
+            //deleta as atividades que não são pertencentes mais
+            $atividades = Atividade::hydrate((array)json_decode($request->atividades));
+            $atividades = $atividades->flatten();
+            $diff = collect($e->atividades->pluck('id'))->diff($atividades->pluck('id'));
+            $e->atividades()->whereIn('id', $diff)->delete();
+            foreach ($atividades as $atv) {
+                $a = null;
+                $apr = null;
+                if ($e->atividades->contains($atv->id)) {
+                    $a = Atividade::find($atv->id);
+                } else {
+                    $a = new Atividade();
+                }
+                $a->nome = $atv->nome;
+                $a->data = $atv->data;
+                $a->horario_inicio = $atv->horario_inicio;
+                $a->horario_fim = $atv->horario_fim;
+                $a->descricao = $atv->descricao;
+                $a->local = $atv->local;
+                $a->tipo_atividade()->associate($atv->tipo_atividade_id);
+                $a->evento()->associate($e->id);
+                $a->save();
+                $participantes = [];
+                foreach ($atv->apresentadores as $apresentador) {
+                    $apr = Apresentador::firstWhere('email', $apresentador->email);
+                    if ($apr == null) {
+                        $apr = new Apresentador();
+                        $apr->email = $apresentador->email;
+                    }
+                    $apr->nome = $apresentador->nome;
+                    $apr_user = User::firstWhere('email', $apresentador->email);
+                    $pa = ParticipanteAtividade::where('apresentador_id', $apr->id)->where('atividade_id', $a->id)->first();
 
-        //Cria as novas ou atualiza as recentes
-        foreach ($atividades as $atv) {
-            $a = null;
-            if ($e->atividades->contains($atv->id)) {
-                $a = Atividade::find($atv->id);
-            } else {
-                $a = new Atividade();
-            }
-            $a->nome = $atv->nome;
-            $a->data = $atv->data;
-            $a->horario_inicio = $atv->horario_inicio;
-            $a->horario_fim = $atv->horario_fim;
-            $a->tipo_atividade()->associate($atv->tipo_atividade_id);
-            $a->evento()->associate($e->id);
-            $a->nome_apresentador = $atv->nome_apresentador;
-            $a->email_apresentador = $atv->email_apresentador;
 
-            $apr = User::firstWhere('email', $a->email_apresentador);
-            if ($apr != null) {
-                $a->apresentador()->associate($apr->id);
+                    if ($pa == null) {
+                        $pa = new ParticipanteAtividade();
+                    }
+                    $pa->atividade_id = $a->id;
+                    if ($apr_user != null) {
+                        $pa->user_id = $apr_user->id;
+                        $apr->user()->associate($apr_user->id);
+                    }
+
+                    $apr->save();
+                    $pa->apresentador_id = $apr->id;
+                    $pa->save();
+                    array_push($participantes, $apr->id);
+                }
+                ParticipanteAtividade::whereNotIn('apresentador_id', $participantes)->where('atividade_id', $a->id)->delete();
+
+                if ($request->hasFile('banner')) {
+                    Storage::cloud()->delete($e->banner);
+                    $path = "images/eventos/{$e->id}/";
+                    $banner = $request->file('banner');
+                    $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
+                    Storage::cloud()->put($nome_banner, $banner->getContent());
+                    $e->banner = Storage::cloud()->url($nome_banner);
+                }
+
+                if ($request->files->has('imagem')) {
+                    Storage::cloud()->deleteDirectory($path . "outras/");
+                    foreach ($request->file('imagem') as $key => $i) {
+                        $img = new Imagem();
+                        $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
+                        Storage::cloud()->put($nome, $i->getContent());
+                        $img->imagem = Storage::cloud()->url($nome);
+                        $img->evento()->associate($e->id);
+                        $img->tipo()->associate(1);
+                        $img->save();
+                    }
+                }
+                $e->save();
             }
-            $a->save();
-            if ($a->nome_apresentador != null) {
-                $pa = new ParticipanteAtividade();
-                $pa->atividade_id = $a->id;
-                $pa->apresentador = true;
-                if ($apr != null)
-                    $pa->user_id = $apr->id;
-                $pa->save();
-            }
-        }
+        });
 
         return response()->json(null, 201);
     }
