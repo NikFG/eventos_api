@@ -19,7 +19,7 @@ class Atividade extends Model {
     }
 
     public function apresentadores() {
-        return $this->hasMany(Apresentador::class);
+        return $this->belongsToMany(Apresentador::class, ParticipanteAtividade::class);
     }
 
     public function tipo_atividade() {
