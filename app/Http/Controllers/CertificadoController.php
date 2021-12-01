@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\EnvioEmailJob;
 use App\Mail\EnvioEmail;
+use App\Models\Apresentador;
 use App\Models\Atividade;
 use App\Models\Certificado;
 use App\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class CertificadoController extends Controller {
@@ -38,15 +40,19 @@ class CertificadoController extends Controller {
     public function store(Request $request, int $id): JsonResponse {
         $a = Atividade::with('evento')->find($id);
         $participantes = json_decode($request->participantes);
+        $apresentadores = json_decode($request->apresentadores);
         $horario_inicio = Carbon::parse($a->horario_inicio);
         $horario_fim = Carbon::parse($a->horario_fim);
         $horas = $horario_fim->diff($horario_inicio);
         $modelo = $request->modelo;
         $horas = $horas->format('%H:%I');
+        $atv = new Atividade();
+
 
         try {
-            DB::transaction(function () use ($modelo, $horas, $a, $participantes) {
+            DB::transaction(function () use ($modelo, $horas, $a, $participantes, $apresentadores) {
                 foreach ($participantes as $p) {
+                    Log::info("Participante: " . $p);
                     $data = Carbon::now();
                     $c = new Certificado();
                     $c->descricao = $a->nome;
@@ -64,13 +70,35 @@ class CertificadoController extends Controller {
                     if ($c->save()) {
                         $a->users()->updateExistingPivot($p, ['participou' => true]);
                         $user = User::findOrFail($c->participante_id);
-                        EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
+                        EnvioEmailJob::dispatch($user->nome, $user->email, $c)->delay(now()->addSeconds('3'));
+                    }
+                }
+                foreach ($apresentadores as $ap) {
+                    Log::info("Apresentador: " . $ap);
+                    $data = Carbon::now();
+                    $c = new Certificado();
+                    $c->descricao = $a->nome;
+                    $c->data_emissao = $data->toDateString();
+                    $c->data_hora_evento = $a->data;
+                    $c->nome_evento = $a->evento->nome;
+                    $c->local = $a->local;
+                    $c->horas = $horas;
+                    $c->apresentador()->associate($ap);
+                    $c->evento()->associate($a->evento_id);
+                    $c->instituicao()->associate($a->evento->instituicao_id);
+                    $c->atividade()->associate($a->id);
+                    $c->codigo_verificacao = Hash::make($a->id . '-' . $ap);
+                    $c->modeloCertificado()->associate($modelo);
+                    if ($c->save()) {
+                        $a->apresentadores()->updateExistingPivot($ap, ['participou' => true]);
+                        $apr = Apresentador::findOrFail($c->apresentador_id);
+                        EnvioEmailJob::dispatch($apr->nome, $apr->email, $c)->delay(now()->addSeconds('3'));
                     }
                 }
             });
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json($e, 500);
+            return response()->json($e->getTrace(), 500);
         }
         return response()->json(null, 201);
     }

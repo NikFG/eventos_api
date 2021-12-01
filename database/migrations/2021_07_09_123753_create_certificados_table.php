@@ -19,7 +19,7 @@ class CreateCertificadosTable extends Migration {
             $table->dateTime('data_hora_evento');
             $table->string('nome_evento', 100);
             $table->string('local', 100);
-            $table->float('horas');
+            $table->string('horas',10);
             $table->unsignedBigInteger('participante_id');
             $table->unsignedBigInteger('evento_id');
             $table->unsignedBigInteger('instituicao_id');

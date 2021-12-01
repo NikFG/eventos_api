@@ -18,4 +18,7 @@ class Apresentador extends Model {
     public function atividade() {
         return $this->belongsTo(Atividade::class);
     }
+    public function apresentador() {
+        return $this->belongsTo(Apresentador::class);
+    }
 }

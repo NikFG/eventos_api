@@ -170,7 +170,7 @@
             </div>
             <div class="divTexto">
                 <p class="texto">Certifico que <span
-                        class="negrito">{{$participante->nome}}</span> participou com êxito da atividade <span
+                        class="negrito">{{$nome}}</span> participou com êxito da atividade <span
                         class="negrito">{{$atividade->nome}}</span> realizada
                     em {{\Carbon\Carbon::parse($atividade->data)->format("d/m/Y")}} durante o
                     evento {{$atividade->evento->nome}} com
