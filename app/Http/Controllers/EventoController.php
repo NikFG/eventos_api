@@ -318,9 +318,11 @@ class EventoController extends Controller {
                     $apr->save();
                     $pa->apresentador_id = $apr->id;
                     $pa->save();
+
                     array_push($participantes, $apr->id);
                 }
-                ParticipanteAtividade::whereNotIn('apresentador_id', $participantes)->where('atividade_id', $a->id)->delete();
+
+                ParticipanteAtividade::whereNotNull('apresentador_id')->whereNotIn('apresentador_id', $participantes)->where('atividade_id', $a->id)->delete();
 
                 if ($request->hasFile('banner')) {
                     Storage::cloud()->delete($e->banner);
