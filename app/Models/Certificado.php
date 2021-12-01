@@ -13,6 +13,10 @@ class Certificado extends Model {
         return $this->belongsTo(User::class, 'participante_id');
     }
 
+    public function apresentador() {
+        return $this->belongsTo(Apresentador::class, 'apresentador_id');
+    }
+
     public function evento() {
         return $this->belongsTo(Evento::class);
     }
@@ -28,4 +32,5 @@ class Certificado extends Model {
     public function modeloCertificado(): BelongsTo {
         return $this->belongsTo(ModeloCertificado::class);
     }
+
 }
