@@ -6,7 +6,6 @@ use App\Models\Atividade;
 use App\Models\Certificado;
 use App\Models\Instituicao;
 use App\Models\ModeloCertificado;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -17,7 +16,8 @@ use PDF;
 class EnvioEmail extends Mailable {
     use Queueable, SerializesModels;
 
-    private $user;
+    private $nome;
+    private $email;
     private $certificado;
 
     /**
@@ -25,8 +25,9 @@ class EnvioEmail extends Mailable {
      *
      * @return void
      */
-    public function __construct(User $user, Certificado $certificado) {
-        $this->user = $user;
+    public function __construct(string $nome, string $email, Certificado $certificado) {
+        $this->nome = $nome;
+        $this->email = $email;
         $this->certificado = $certificado;
 
     }
@@ -41,8 +42,8 @@ class EnvioEmail extends Mailable {
         setlocale(LC_ALL, 'pt_BR.utf-8', 'ptb', 'pt_BR', 'portuguese-brazil', 'portuguese-brazilian', 'bra', 'brazil', 'br');
         setlocale(LC_TIME, 'pt_BR.utf-8', 'ptb', 'pt_BR', 'portuguese-brazil', 'portuguese-brazilian', 'bra', 'brazil', 'br');
 
-        $this->subject('Novo certificado para você ' . $this->user->nome);
-        $this->to($this->user->email, $this->user->nome);
+        $this->subject('Novo certificado para você ' . $this->nome);
+        $this->to($this->email, $this->nome);
 
         $modelo = ModeloCertificado::find($this->certificado->modelo_certificado_id);
         $atividade = Atividade::find($this->certificado->atividade_id);
@@ -52,7 +53,7 @@ class EnvioEmail extends Mailable {
         $pdf = PDF::loadView('certificado', [
             'certificado' => $this->certificado,
             'modelo' => $modelo,
-            'participante' => $this->user,
+            'nome' => $this->nome,
             'atividade' => $atividade,
             'instituicao' => $instituicao,
             'data' => $data,
@@ -61,7 +62,7 @@ class EnvioEmail extends Mailable {
 
 
         $this->attachData($pdf->output(), 'certificado.pdf');
-        return $this->markdown('mail.emailCertificado', ['user' => $this->user]);
+        return $this->markdown('mail.emailCertificado', ['nome' => $this->nome]);
 
     }
 }

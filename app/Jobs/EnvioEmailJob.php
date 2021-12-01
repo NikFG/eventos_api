@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Mail\EnvioEmail;
 use App\Models\Certificado;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -18,7 +17,8 @@ class EnvioEmailJob implements ShouldQueue {
     public $tries = 3;
     public $timeout = 500;
     public $maxExceptions = 2;
-    private $user;
+    private $nome;
+    private $email;
     private $certificado;
 
 
@@ -27,8 +27,9 @@ class EnvioEmailJob implements ShouldQueue {
      *
      * @return void
      */
-    public function __construct(User $user, Certificado $certificado) {
-        $this->user = $user;
+    public function __construct(string $nome, string $email, Certificado $certificado) {
+        $this->nome = $nome;
+        $this->email = $email;
         $this->certificado = $certificado;
     }
 
@@ -38,6 +39,6 @@ class EnvioEmailJob implements ShouldQueue {
      * @return void
      */
     public function handle() {
-        Mail::send(new EnvioEmail($this->user, $this->certificado));
+        Mail::send(new EnvioEmail($this->nome, $this->email, $this->certificado));
     }
 }
