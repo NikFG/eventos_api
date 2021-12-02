@@ -38,8 +38,8 @@ class EventoController extends Controller {
             ->with('instituicao')
             ->orderBy('created_at', 'desc');
 
-        if ($request->q != null) {
-            $queryLower = trim(strtolower($request->q));
+        if ($request->titulo != null) {
+            $queryLower = trim(strtolower($request->titulo));
             $eventos->where(function ($query) use ($queryLower) {
                 $query->where(DB::raw('lower(nome)'), 'like', '%' . $queryLower . '%')
                     ->orWhere(DB::raw('lower(breve_descricao)'), 'like', '%' . $queryLower . '%');
@@ -77,19 +77,7 @@ class EventoController extends Controller {
                 $q->whereTime('atividades.horario_fim', '<=', $request->horarioFim);
             });
         }
-
-
-        /* foreach ($eventos as $e) {
-             if ($e->banner != null) {
-                 try {
-                     $e->banner = base64_encode(Storage::get($e->banner));
-                 } catch (FileNotFoundException $error) {
-                     return response()->json(null, 500);
-                 }
-             }
-         }*/
-        //        $eventos = $eventos->paginate(10);
-        return response()->json($eventos->get());
+        return response()->json($eventos->paginate(20));
     }
 
     public function porCategoria($id): JsonResponse {
@@ -108,7 +96,6 @@ class EventoController extends Controller {
      *
      * @param Request $request
      * @return JsonResponse
-     * @throws FileNotFoundException
      */
     public function store(Request $request): JsonResponse {
 
