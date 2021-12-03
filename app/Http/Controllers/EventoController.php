@@ -9,7 +9,6 @@ use App\Models\Imagem;
 use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
 use App\Models\User;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -343,10 +342,12 @@ class EventoController extends Controller {
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function destroy($id) {
-        //
+    public function destroy(int $id): JsonResponse {
+        $e = Evento::findOrFail($id);
+        $e->delete();
+        return response()->json(null, 204);
     }
 
     public function compraIngresso(Request $request): JsonResponse {
