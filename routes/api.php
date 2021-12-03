@@ -24,6 +24,7 @@ Route::group(["prefix" => "eventos"], function () {
     Route::get("/criados", [EventoController::class, 'eventos_criados'])->can('gerenciar_evento');
     Route::post("/store", [EventoController::class, 'store'])->can('gerenciar_evento');
     Route::post("/update/{id}", [EventoController::class, 'update'])->can('gerenciar_evento');
+    Route::delete("/delete/{id}", [EventoController::class, 'destroy'])->can('gerenciar_evento');
 
 });
 
