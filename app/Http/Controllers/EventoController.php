@@ -9,7 +9,6 @@ use App\Models\Imagem;
 use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
 use App\Models\User;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -343,10 +342,12 @@ class EventoController extends Controller {
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return Response
+     * @return JsonResponse
      */
-    public function destroy($id) {
-        //
+    public function destroy(int $id): JsonResponse {
+        $e = Evento::findOrFail($id);
+        $e->delete();
+        return response()->json(null, 204);
     }
 
     public function compraIngresso(Request $request): JsonResponse {
@@ -362,6 +363,11 @@ class EventoController extends Controller {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
 
         }])
+            ->withCount(['atividades as participantes_count' => function (Builder $query) {
+                $query->select(DB::raw('count(distinct(participante_atividades.id))'))
+                    ->join('participante_atividades', 'participante_atividades.atividade_id', '=', 'atividades.id')
+                    ->whereNull('participante_atividades.apresentador_id');
+            }])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();

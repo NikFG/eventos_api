@@ -117,4 +117,26 @@ class InstituicaoController extends Controller {
         $instituicao = Instituicao::find($user->instituicao_id);
         return response()->json($instituicao);
     }
+
+    public function transferirAdmin(Request $request) {
+        $admin = Auth::user();
+        $user = User::where('email', $request->email)->first();
+        if ($user == null) {
+            return response()->json(["msg" => "Usuário não existente, verifique o email digitado"], 422);
+        }
+        $user->instituicao()->associate($admin->instituicao_id);
+        $user->save();
+        $user->assignRole('admin');
+
+        if (!$user->hasRole('associado')) {
+            $user->assignRole('associado');
+        }
+        $admin->removeRole('admin');
+        if ($request->permanece == false) {
+            $admin->removeRole('associado');
+            $admin->instituicao_id = null;
+            $admin->save();
+        }
+        return response()->json([], 201);
+    }
 }
