@@ -363,6 +363,11 @@ class EventoController extends Controller {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
 
         }])
+            ->withCount(['atividades as participantes_count' => function (Builder $query) {
+                $query->select(DB::raw('count(distinct(participante_atividades.id))'))
+                    ->join('participante_atividades', 'participante_atividades.atividade_id', '=', 'atividades.id')
+                    ->whereNull('participante_atividades.apresentador_id');
+            }])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
