@@ -72,8 +72,13 @@ class Senha implements Rule
      */
     protected $uncompromised = false;
 
-
-    protected $isChange = false;
+    /**
+     * Create a new rule instance.
+     *
+     * @param  array  $options
+     * @return void
+     */
+    protected $change = false;
 
     /**
      * The number of times a password can appear in data leaks before being consider compromised.
