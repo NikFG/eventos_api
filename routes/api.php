@@ -37,6 +37,7 @@ Route::group(["prefix" => "user"], function () {
 
     Route::post("/register", [UserController::class, 'store']);
     Route::post("/login", [AuthController::class, 'login']);
+    Route::post('/checkauth', [AuthController::class, 'checkAuth']);
 
     Route::post('/update/{id}', [UserController::class, 'update'])->middleware('role:usuario')->where('id', '[0-9]+');
     Route::post("/logout", [AuthController::class, 'logout'])->middleware('role:usuario');
