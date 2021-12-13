@@ -75,4 +75,8 @@ class AuthController extends Controller {
 
         return response()->json(["msg" => "Senha alterada com sucesso"]);
     }
+
+    public function checkAuth(): JsonResponse {
+        return response()->json(['valid' => auth()->check()]);
+    }
 }

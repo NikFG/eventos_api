@@ -104,7 +104,7 @@ class UserController extends Controller {
 
     public function fromToken() {
         $user = Auth::user();
-        return response()->json($user);
+        return response()->json(['user' => $user, 'roles' => $user->getRoleNames()]);
     }
 
 }
