@@ -102,7 +102,6 @@ class EventoController extends Controller {
         $validator = Validator::make($request->all(), [
             'nome' => ['required', 'string', 'min:10', 'max:100'],
             'expectativa_participantes' => ['required', 'integer'],
-            'link_evento' => ['max:100', 'nullable'],
             'breve_descricao' => ['required', 'string', 'max:100'],
             'local' => ['nullable', 'max:500'],
             'descricao' => ['nullable'],
@@ -131,12 +130,11 @@ class EventoController extends Controller {
                 $e->nome = $request->nome;
                 $e->breve_descricao = $request->breve_descricao;
                 $e->expectativa_participantes = $request->expectativa_participantes;
-                $e->link_evento = $request->link_evento;
                 $e->local = $request->local;
                 $e->descricao = $request->descricao;
                 $e->tipo_id = 1;
                 $e->instituicao_id = $instituicao->id;
-                $e->link_evento = '';
+
                 $e->categoria()->associate($request->categoria_id);
                 $e->user()->associate($user->id);
                 $e->save();
@@ -228,7 +226,6 @@ class EventoController extends Controller {
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'nome' => ['required', 'string', 'min:10', 'max:100'],
-            'link_evento' => ['max:100', 'nullable'],
             'breve_descricao' => ['required', 'string', 'max:100'],
             'local' => ['nullable', 'max:500'],
             'descricao' => ['nullable'],
@@ -240,7 +237,7 @@ class EventoController extends Controller {
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
             'atividades.*.local' => ['nullable', 'max:200'],
-            'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
+            'atividades.*.link_ tranmissao' => ['nullable', 'max:400'],
             'atividades.*.descricao' => ['nullable'],
             'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
             'atividades.*.apresentadores' => ['required'],
