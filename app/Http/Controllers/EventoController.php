@@ -122,75 +122,78 @@ class EventoController extends Controller {
             'atividades.*.apresentadores.*.email' => ['required', 'email', 'max:100'],
         ]);
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(['message' => $validator->errors()], 422);
         }
+        try {
+            DB::transaction(function () use ($user, $request) {
+                $instituicao = Instituicao::find($user->instituicao_id);
+                $e = new Evento();
+                $e->nome = $request->nome;
+                $e->breve_descricao = $request->breve_descricao;
+                $e->expectativa_participantes = $request->expectativa_participantes;
+                $e->link_evento = $request->link_evento;
+                $e->local = $request->local;
+                $e->descricao = $request->descricao;
+                $e->tipo_id = 1;
+                $e->instituicao_id = $instituicao->id;
+                $e->link_evento = '';
+                $e->categoria()->associate($request->categoria_id);
+                $e->user()->associate($user->id);
+                $e->save();
 
-        DB::transaction(function () use ($user, $request) {
-            $instituicao = Instituicao::find($user->instituicao_id);
-            $e = new Evento();
-            $e->nome = $request->nome;
-            $e->breve_descricao = $request->breve_descricao;
-            $e->expectativa_participantes = $request->expectativa_participantes;
-            $e->link_evento = $request->link_evento;
-            $e->local = $request->local;
-            $e->descricao = $request->descricao;
-            $e->tipo_id = 1;
-            $e->instituicao_id = $instituicao->id;
-            $e->link_evento = '';
-            $e->categoria()->associate($request->categoria_id);
-            $e->user()->associate($user->id);
-            $e->save();
 
+                //criar atividades
+                $atividades = json_decode($request->atividades);
 
-            //criar atividades
-            $atividades = json_decode($request->atividades);
-
-            foreach ($atividades as $atv) {
-                $a = new Atividade();
-                $a->nome = $atv->nome;
-                $a->data = $atv->data;
-                $a->horario_inicio = $atv->horario_inicio;
-                $a->horario_fim = $atv->horario_fim;
-                $a->descricao = $atv->descricao;
-                $a->local = $atv->local;
-                $a->tipo_atividade()->associate($atv->tipo_atividade_id);
-                $a->evento()->associate($e->id);
-                $a->save();
-                foreach ($atv->apresentadores as $apresentador) {
-                    $apr = new Apresentador();
-                    $apr->nome = $apresentador->nome;
-                    $apr->email = $apresentador->email;
-                    $apr_user = User::firstWhere('email', $apresentador->email);
-                    $pa = new ParticipanteAtividade();
-                    $pa->atividade_id = $a->id;
-                    if ($apr_user != null) {
-                        $pa->user_id = $apr_user->id;
-                        $apr->user()->associate($apr_user->id);
+                foreach ($atividades as $atv) {
+                    $a = new Atividade();
+                    $a->nome = $atv->nome;
+                    $a->data = $atv->data;
+                    $a->horario_inicio = $atv->horario_inicio;
+                    $a->horario_fim = $atv->horario_fim;
+                    $a->descricao = $atv->descricao;
+                    $a->local = $atv->local;
+                    $a->tipo_atividade()->associate($atv->tipo_atividade_id);
+                    $a->evento()->associate($e->id);
+                    $a->save();
+                    foreach ($atv->apresentadores as $apresentador) {
+                        $apr = new Apresentador();
+                        $apr->nome = $apresentador->nome;
+                        $apr->email = $apresentador->email;
+                        $apr_user = User::firstWhere('email', $apresentador->email);
+                        $pa = new ParticipanteAtividade();
+                        $pa->atividade_id = $a->id;
+                        if ($apr_user != null) {
+                            $pa->user_id = $apr_user->id;
+                            $apr->user()->associate($apr_user->id);
+                        }
+                        $apr->save();
+                        $pa->apresentador_id = $apr->id;
+                        $pa->save();
                     }
-                    $apr->save();
-                    $pa->apresentador_id = $apr->id;
-                    $pa->save();
+
+
                 }
+                $path = "images/eventos/{$e->id}/";
+                $banner = $request->file('banner');
+                $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
+                Storage::cloud()->put($nome_banner, $banner->getContent());
 
-
-            }
-            $path = "images/eventos/{$e->id}/";
-            $banner = $request->file('banner');
-            $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
-            Storage::cloud()->put($nome_banner, $banner->getContent());
-
-            foreach ($request->file('imagem') as $key => $i) {
-                $img = new Imagem();
-                $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
-                Storage::cloud()->put($nome, $i->getContent());
-                $img->imagem = Storage::cloud()->url($nome);
-                $img->evento()->associate($e->id);
-                $img->tipo()->associate(1);
-                $img->save();
-            }
-            $e->banner = Storage::cloud()->url($nome_banner);
-            $e->save();
-        });
+                foreach ($request->file('imagem') as $key => $i) {
+                    $img = new Imagem();
+                    $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
+                    Storage::cloud()->put($nome, $i->getContent());
+                    $img->imagem = Storage::cloud()->url($nome);
+                    $img->evento()->associate($e->id);
+                    $img->tipo()->associate(1);
+                    $img->save();
+                }
+                $e->banner = Storage::cloud()->url($nome_banner);
+                $e->save();
+            });
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
 
         return response()->json(null, 201);
     }
