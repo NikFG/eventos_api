@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class VerificationController extends Controller {
 
@@ -18,7 +19,7 @@ class VerificationController extends Controller {
             $user->markEmailAsVerified();
         }
 
-        return view('auth.verify');
+        return redirect()->away(env('HOME_APLICACAO') . '/login');
     }
 
     public function resend() {
