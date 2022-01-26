@@ -167,4 +167,17 @@ class CertificadoController extends Controller {
     public function destroy($id) {
         //
     }
+
+    public function verificaCertificado(Request $request): JsonResponse {
+        $certificado = Certificado::where('codigo_verificacao', $request->codigo)->first();
+
+        if ($certificado) {
+            $codigo_extra = Hash::check($certificado->atividade_id . '-' . $certificado->apresentador_id, $request->codigo);
+            if ($request->codigo == $certificado->codigo_verificacao && $codigo_extra) {
+
+                return response()->json("Certificado válido!", 200);
+            }
+        }
+        return response()->json("Certificado inválido!", 500);
+    }
 }

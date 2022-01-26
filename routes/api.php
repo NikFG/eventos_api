@@ -67,12 +67,13 @@ Route::group(["prefix" => "atividades"], function () {
 });
 
 
-Route::group(["prefix" => "certificados", "middleware" => "role:usuario"], function () {
-    Route::get('/', [CertificadoController::class, 'index']);
-    Route::get('/{id}', [CertificadoController::class, 'show'])->where('id', '[0-9]+');;
+Route::group(["prefix" => "certificados"], function () {
+    Route::get('/', [CertificadoController::class, 'index'])->middleware('role:usuario');
+    Route::get('/{id}', [CertificadoController::class, 'show'])->where('id', '[0-9]+')->middleware('role:usuario');
     Route::post('/atividade/{id}', [CertificadoController::class, 'store'])->can('gerenciar_certificado');
     Route::post('/{id}/gerar', [CertificadoController::class, 'gerarCertificado'])->where('id', '[0-9]+')->can('gerenciar_certificado');
     Route::post('/{id}/gerarByAtividade', [CertificadoController::class, 'gerarCertificadoByUserAtividade'])->where('id', '[0-9]+')->middleware('role:usuario');
+    Route::post('/verificar', [CertificadoController::class, 'verificaCertificado']);
 });
 
 
