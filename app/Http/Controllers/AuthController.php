@@ -79,4 +79,9 @@ class AuthController extends Controller {
     public function checkAuth(): JsonResponse {
         return response()->json(['valid' => auth()->check()]);
     }
+
+
+    public function refresh(): JsonResponse {
+        return $this->respondWithToken(auth()->refresh());
+    }
 }
