@@ -196,6 +196,7 @@
 
             </div>
             <p class="codigo">
+                Para verificar o certificado, clique aqui: <a href="{{$verifica_url}}">{{$verifica_url}}</a><br/>
                 Código de verificação: {{$certificado->codigo_verificacao}}
             </p>
         </div>
