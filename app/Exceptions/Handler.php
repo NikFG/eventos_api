@@ -32,10 +32,20 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
-    public function register()
-    {
+    public function register() {
+
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $e) {
+
+        if ($e->getMessage() == "This action is unauthorized.") {
+        return response()->json([
+            'message' => 'Ação não autorizada',
+        ], 403);
+        }
+        return parent::render($request, $e);
     }
 }
