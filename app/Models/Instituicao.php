@@ -21,4 +21,8 @@ class Instituicao extends Model {
     public function administrador() {
         return $this->belongsTo(User::class, 'administrador_id');
     }
+
+    public function associados($admin_id) {
+        return $this->hasMany(User::class)->where('id', '!=', $admin_id);
+    }
 }
