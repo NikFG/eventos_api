@@ -50,9 +50,16 @@ Route::group(["prefix" => "instituicao"], function () {
     Route::get('/', [InstituicaoController::class, 'index']);
     Route::get('/user', [InstituicaoController::class, 'showByUser'])->can('gerenciar_instituicao');
     Route::post("/store", [InstituicaoController::class, 'store'])->middleware('role:usuario');
-    Route::post("/addUsuario", [InstituicaoController::class, 'addUsusario'])->can('cadastrar_instituicao');
+
+
     Route::post("/update/{id}", [InstituicaoController::class, 'update'])->middleware('role:admin')->where('id', '[0-9]+');
     Route::post("/transferir", [InstituicaoController::class, 'transferirAdmin'])->middleware('role:admin');
+
+
+    Route::get('/associados', [InstituicaoController::class, 'getAssociados'])->middleware('role:admin');
+    Route::post("/associados", [InstituicaoController::class, 'addAssociado'])->can('cadastrar_instituicao');
+    Route::delete("/associados/{email}", [InstituicaoController::class, 'deleteAssociado'])->middleware('role:admin');
+
 });
 
 Route::group(["prefix" => "tipoAtividades"], function () {
