@@ -177,15 +177,18 @@ class EventoController extends Controller {
                 $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
                 Storage::cloud()->put($nome_banner, $banner->getContent());
 
-                foreach ($request->file('imagem') as $key => $i) {
-                    $img = new Imagem();
-                    $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
-                    Storage::cloud()->put($nome, $i->getContent());
-                    $img->imagem = Storage::cloud()->url($nome);
-                    $img->evento()->associate($e->id);
-                    $img->tipo()->associate(1);
-                    $img->save();
+                if ($request->files->has('imagem')) {
+                    foreach ($request->file('imagem') as $key => $i) {
+                        $img = new Imagem();
+                        $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
+                        Storage::cloud()->put($nome, $i->getContent());
+                        $img->imagem = Storage::cloud()->url($nome);
+                        $img->evento()->associate($e->id);
+                        $img->tipo()->associate(1);
+                        $img->save();
+                    }
                 }
+
                 $e->banner = Storage::cloud()->url($nome_banner);
                 $e->save();
             });
