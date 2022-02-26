@@ -102,15 +102,6 @@ class InstituicaoController extends Controller {
         //
     }
 
-    //TODO VALIDAÇÃO
-    public function addUsusario(Request $request) {
-        $admin = Auth::user();
-        $user = User::where('email', $request->email)->first();
-        $user->instituicao()->associate($admin->instituicao_id);
-        $user->save();
-        $user->assignRole('associado');
-        return response()->json([], 201);
-    }
 
     public function showByUser() {
         $user = Auth::user();
@@ -138,5 +129,50 @@ class InstituicaoController extends Controller {
             $admin->save();
         }
         return response()->json([], 201);
+    }
+
+
+    //Associados
+
+    public function addAssociado(Request $request) {
+        $admin = Auth::user();
+        $user = User::where('email', $request->email)->first();
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', 'exists:users,email'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Usuário não encontrado'], 422);
+        }
+        $user->instituicao()->associate($admin->instituicao_id);
+        $user->save();
+        $user->assignRole('associado');
+        return response()->json($user);
+    }
+
+    public function getAssociados() {
+        $user = Auth::user();
+
+        $instituicao = Instituicao::find($user->instituicao_id);
+        $associados = $instituicao
+            ->associados($user->id)
+            ->where('instituicao_id', $instituicao->id)
+            ->get();
+        return response()->json($associados);
+    }
+
+    public function deleteAssociado($email) {
+        $user = Auth::user();
+        $validator = Validator::make(['email' => $email], [
+            'email' => ['required', 'email', 'max:255', 'min:3', 'exists:users,email']
+        ]);
+        if ($validator->fails()) {
+            return response()->json('Usuário não encontrado', 422);
+        }
+        $associado = User::where('email', $email)->first();
+        $associado->removeRole('associado');
+        $associado->instituicao()->dissociate();
+        $associado->save();
+
+        return response()->json($associado);
     }
 }
