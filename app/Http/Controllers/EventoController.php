@@ -385,7 +385,8 @@ class EventoController extends Controller {
         })
             ->with(['atividades' => function ($query) use ($user) {
                 $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-//                $query->whereRelation('users', 'users.id', $user->id);
+            }, 'atividades.certificados' => function ($query) use ($user) {
+                $query->where('participante_id', $user->id);
             }])
             ->get();
         return response()->json($eventos);
