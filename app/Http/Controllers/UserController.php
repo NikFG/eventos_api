@@ -74,6 +74,7 @@ class UserController extends Controller {
         $validator = Validator::make($request->all(), [
             'nome' => 'required|string|min:3',
             'telefone' => 'required|celular_com_ddd',
+            'old_password' => 'required_with:password',
             'password' => ['nullable', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)->change()],
         ]);
         if ($validator->fails()) {
@@ -82,6 +83,11 @@ class UserController extends Controller {
         $user = User::find($id);
         if ($user == null) {
             return response()->json([], 404);
+        }
+        if ($request->has('old_password')) {
+            if (!Auth::attempt(['email' => $user->email, 'password' => $request->old_password])) {
+                return response()->json([], 401);
+            }
         }
         $user->nome = $request->nome;
         $user->telefone = $request->telefone;
