@@ -180,4 +180,13 @@ class CertificadoController extends Controller {
         }
         return response()->json("Certificado inválido!", 500);
     }
+
+    /**
+     */
+    public function geraLinkCertificado(int $id): JsonResponse {
+        Auth::user();
+        $url = Storage::cloud()->temporaryUrl('certificados/' . $id . '.pdf', now()->addHours());
+
+        return response()->json(['url' => $url]);
+    }
 }
