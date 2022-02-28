@@ -6,11 +6,14 @@ use App\Models\Atividade;
 use App\Models\Certificado;
 use App\Models\Instituicao;
 use App\Models\ModeloCertificado;
+use PDF;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use PDF;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
 
 
 class EnvioEmail extends Mailable {
@@ -58,11 +61,14 @@ class EnvioEmail extends Mailable {
             'instituicao' => $instituicao,
             'data' => $data,
             'verifica_url' => env('HOME_APLICACAO').'/certificado/verificar'
-
         ])->setPaper('a4', 'landscape')->setWarnings(false);
 
+        $path = 'certificados/' . $this->certificado->id . '.pdf';
 
-        $this->attachData($pdf->output(), 'certificado.pdf');
+        $arquivo = $pdf->output();
+        Storage::cloud()->put($path, $arquivo);
+        $this->attachData($arquivo, 'certificado.pdf');
+
         return $this->markdown('mail.emailCertificado', ['nome' => $this->nome]);
 
     }
