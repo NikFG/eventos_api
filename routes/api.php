@@ -81,6 +81,7 @@ Route::group(["prefix" => "certificados"], function () {
     Route::post('/{id}/gerar', [CertificadoController::class, 'gerarCertificado'])->where('id', '[0-9]+')->can('gerenciar_certificado');
     Route::post('/{id}/gerarByAtividade', [CertificadoController::class, 'gerarCertificadoByUserAtividade'])->where('id', '[0-9]+')->middleware('role:usuario');
     Route::post('/verificar', [CertificadoController::class, 'verificaCertificado']);
+    Route::get('/{id}/download', [CertificadoController::class, 'geraLinkCertificado'])->where('id', '[0-9]+')->middleware('role:usuario');
 });
 
 

@@ -65,9 +65,9 @@ class ModeloCertificadoController extends Controller {
             $path_assinatura = $path . "/assinatura/" . Str::uuid() . '-' . $assinatura->getClientOriginalName();
             Storage::cloud()->put($path_assinatura, $assinatura->getContent());
 
-            $m->imagem_fundo = Storage::cloud()->url($nome_imagem_fundo);
-            $m->logo = Storage::cloud()->url($nome_logo);
-            $m->assinatura = Storage::cloud()->url($path_assinatura);
+            $m->imagem_fundo = $nome_imagem_fundo;
+            $m->logo = $nome_logo;
+            $m->assinatura = $path_assinatura;
 
             $m->save();
         });
