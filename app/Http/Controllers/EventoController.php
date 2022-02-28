@@ -9,6 +9,7 @@ use App\Models\Imagem;
 use App\Models\Instituicao;
 use App\Models\ParticipanteAtividade;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -109,7 +110,7 @@ class EventoController extends Controller {
             'banner' => ['required', 'image'],
             'atividades' => ['required'],
             'atividades.*.nome' => ['required', 'max:255'],
-            'atividades.*.data' => ['required', 'date', 'after:today'],
+            'atividades.*.data' => ['required', 'date', 'after:today', 'date_format:dd/mm/yyyy'],
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
             'atividades.*.local' => ['nullable', 'max:200'],
@@ -146,7 +147,7 @@ class EventoController extends Controller {
                 foreach ($atividades as $atv) {
                     $a = new Atividade();
                     $a->nome = $atv->nome;
-                    $a->data = $atv->data;
+                    $a->data = Carbon::createFromFormat('d/m/Y', $atv->data)->format('Y-m-d');
                     $a->horario_inicio = $atv->horario_inicio;
                     $a->horario_fim = $atv->horario_fim;
                     $a->descricao = $atv->descricao;
@@ -236,7 +237,7 @@ class EventoController extends Controller {
             'banner' => ['nullable', 'image'],
             'atividades' => ['required'],
             'atividades.*.nome' => ['required', 'max:255'],
-            'atividades.*.data' => ['required', 'date', 'after:today'],
+            'atividades.*.data' => ['required', 'date', 'after:today', 'date_format:dd/mm/yyyy'],
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
             'atividades.*.local' => ['nullable', 'max:200'],
@@ -275,7 +276,7 @@ class EventoController extends Controller {
                     $a = new Atividade();
                 }
                 $a->nome = $atv->nome;
-                $a->data = $atv->data;
+                $a->data = Carbon::createFromFormat('d/m/Y', $atv->data)->format('Y-m-d');
                 $a->horario_inicio = $atv->horario_inicio;
                 $a->horario_fim = $atv->horario_fim;
                 $a->descricao = $atv->descricao;
