@@ -27,8 +27,9 @@
             height: 100%;
             width: 100%;
             background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->imagem_fundo)}});
+            background-size: 100% 100%;
 
-            background-position: center top;
+            background-position: left top;
             background-repeat: no-repeat;
             z-index: -1;
         }
@@ -121,7 +122,13 @@
             /*background-color: rgba(150, 150, 150, 0.5) !important;*/
             -webkit-print-color-adjust: exact;
             height: 1.5cm;
+            width: 100%;
+            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->assinatura)}});
+            background-repeat: no-repeat;
+            background-position: center left;
+            background-size: 100% 1.5cm;
             text-align: center;
+            justify-content: center;
         }
 
         .nome_assinatura {
@@ -156,51 +163,51 @@
 
 <div id="page-body">
     <div class="overlay">
+        <div class="content">
+            <div class="row imgTexto">
+                <div class="logo">
+                </div>
+                {{--            <div class="titulo">--}}
+                {{--                titulo--}}
+                {{--            </div>--}}
+                <div class="certificado">
+                    CERTIFICADO
+                </div>
+                <div class="divTexto">
+                    <p class="texto">Certifico que <span
+                            class="negrito">{{$nome}}</span> participou com êxito da atividade <span
+                            class="negrito">{{$atividade->nome}}</span> realizada
+                        em {{\Carbon\Carbon::parse($atividade->data)->format("d/m/Y")}} durante o
+                        evento {{$atividade->evento->nome}} com
+                        a carga horário total de {{$certificado->horas}} hora(s).</p>
+                </div>
+                <div class="cidade">
+                    {{$instituicao->cidade}}, {{$data}}
 
-    </div>
-    <div class="content">
-        <div class="row imgTexto">
-            <div class="logo">
-            </div>
-            {{--            <div class="titulo">--}}
-            {{--                titulo--}}
-            {{--            </div>--}}
-            <div class="certificado">
-                CERTIFICADO
-            </div>
-            <div class="divTexto">
-                <p class="texto">Certifico que <span
-                        class="negrito">{{$nome}}</span> participou com êxito da atividade <span
-                        class="negrito">{{$atividade->nome}}</span> realizada
-                    em {{\Carbon\Carbon::parse($atividade->data)->format("d/m/Y")}} durante o
-                    evento {{$atividade->evento->nome}} com
-                    a carga horário total de {{$certificado->horas}} hora(s).</p>
-            </div>
-            <div class="cidade">
-                {{$instituicao->cidade}}, {{$data}}
-
-            </div>
-
-            <div>
-                <div>
-                    <div class="assinatura">
-                        _________________________________________
-                    </div>
-                    <div class="nome_assinatura">
-                        {{$modelo->nome_assinatura}}
-                    </div>
-                    <div class="cargo">
-                        {{$modelo->cargo_assinatura}}
-                    </div>
                 </div>
 
+                <div>
+                    <div>
+                        <div class="assinatura">
+{{--                            <img class="" src="{{\Illuminate\Support\Facades\Storage::url($modelo->assinatura)}}" alt="assinatura"/>--}}
+                        </div>
+                        <div class="nome_assinatura">
+                            {{$modelo->nome_assinatura}}
+                        </div>
+                        <div class="cargo">
+                            {{$modelo->cargo_assinatura}}
+                        </div>
+                    </div>
+
+                </div>
+                <p class="codigo">
+                    Para verificar o certificado, clique aqui: <a href="{{$verifica_url}}">{{$verifica_url}}</a><br/>
+                    Código de verificação: {{$certificado->codigo_verificacao}}
+                </p>
             </div>
-            <p class="codigo">
-                Para verificar o certificado, clique aqui: <a href="{{$verifica_url}}">{{$verifica_url}}</a><br/>
-                Código de verificação: {{$certificado->codigo_verificacao}}
-            </p>
         </div>
     </div>
+
 
 
 </div>
