@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class CertificadoController extends Controller {
     /**
@@ -70,11 +71,13 @@ class CertificadoController extends Controller {
                     if ($c->save()) {
                         $a->users()->updateExistingPivot($p, ['participou' => true]);
                         $user = User::findOrFail($c->participante_id);
-                        EnvioEmailJob::dispatch($user->nome, $user->email, $c)->delay(now()->addSeconds('3'));
+
+                        Mail::send(new EnvioEmail($user->nome, $user->email, $c));
+//                        EnvioEmailJob::dispatch($user->nome, $user->email, $c)->delay(now()->addSeconds('3'));
                     }
                 }
                 foreach ($apresentadores as $ap) {
-                    Log::info("Apresentador: " . $ap);
+
                     $data = Carbon::now();
                     $c = new Certificado();
                     $c->descricao = $a->nome;
