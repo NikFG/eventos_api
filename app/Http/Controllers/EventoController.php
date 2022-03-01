@@ -108,18 +108,17 @@ class EventoController extends Controller {
             'descricao' => ['nullable'],
             'categoria_id' => ['required', 'exists:categorias,id'],
             'banner' => ['required', 'image'],
-            'atividades' => ['required'],
-            'atividades.*.nome' => ['required', 'max:255'],
-            'atividades.*.data' => ['required', 'date', 'after:today', 'date_format:dd/mm/yyyy'],
+            'atividades' => ['required', 'array'],
+            'atividades.*.nome' => ['required', 'string', 'max:100'],
+            'atividades.*.data' => ['required', 'date', 'after:today'],
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
-            'atividades.*.local' => ['nullable', 'max:200'],
-            'atividades.*.link_tranmissao' => ['nullable', 'max:400'],
-            'atividades.*.descricao' => ['nullable'],
+            'atividades.*.descricao' => ['nullable', 'string'],
             'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
-            'atividades.*.apresentadores' => ['required'],
-            'atividades.*.apresentadores.*.nome' => ['required', 'max:100', 'min:3', 'string'],
+            'atividades.*.apresentadores' => ['required', 'array'],
+            'atividades.*.apresentadores.*.nome' => ['required', 'string', 'max:100'],
             'atividades.*.apresentadores.*.email' => ['required', 'email', 'max:100'],
+
         ]);
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], 422);
@@ -140,26 +139,23 @@ class EventoController extends Controller {
                 $e->user()->associate($user->id);
                 $e->save();
 
-
-                //criar atividades
-                $atividades = json_decode($request->atividades);
-
+                $atividades = $request->atividades;
                 foreach ($atividades as $atv) {
                     $a = new Atividade();
-                    $a->nome = $atv->nome;
-                    $a->data = Carbon::createFromFormat('d/m/Y', $atv->data)->format('Y-m-d');
-                    $a->horario_inicio = $atv->horario_inicio;
-                    $a->horario_fim = $atv->horario_fim;
-                    $a->descricao = $atv->descricao;
-                    $a->local = $atv->local;
-                    $a->tipo_atividade()->associate($atv->tipo_atividade_id);
+                    $a->nome = $atv['nome'];
+                    $a->data = Carbon::createFromFormat('d/m/Y', $atv['data'])->format('Y-m-d');
+                    $a->horario_inicio = $atv['horario_inicio'];
+                    $a->horario_fim = $atv['horario_fim'];
+                    $a->descricao = $atv['descricao'];
+                    $a->local = $atv['local'];
+                    $a->tipo_atividade()->associate($atv['tipo_atividade_id']);
                     $a->evento()->associate($e->id);
                     $a->save();
-                    foreach ($atv->apresentadores as $apresentador) {
+                    foreach ($atv['apresentadores'] as $apresentador) {
                         $apr = new Apresentador();
-                        $apr->nome = $apresentador->nome;
-                        $apr->email = $apresentador->email;
-                        $apr_user = User::firstWhere('email', $apresentador->email);
+                        $apr->nome = $apresentador['nome'];
+                        $apr->email = $apresentador['email'];
+                        $apr_user = User::firstWhere('email', $apr->email);
                         $pa = new ParticipanteAtividade();
                         $pa->atividade_id = $a->id;
                         if ($apr_user != null) {
@@ -194,7 +190,9 @@ class EventoController extends Controller {
                 $e->save();
             });
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => $e->getMessage(),
+                'trace' => $e->getTrace(),
+                'traceString' => $e->getTraceAsString()], 500);
         }
 
         return response()->json(null, 201);
@@ -234,18 +232,16 @@ class EventoController extends Controller {
             'local' => ['nullable', 'max:500'],
             'descricao' => ['nullable'],
             'categoria_id' => ['required', 'exists:categorias,id'],
-            'banner' => ['nullable', 'image'],
-            'atividades' => ['required'],
-            'atividades.*.nome' => ['required', 'max:255'],
-            'atividades.*.data' => ['required', 'date', 'after:today', 'date_format:dd/mm/yyyy'],
+            'banner' => ['image'],
+            'atividades' => ['required', 'array'],
+            'atividades.*.nome' => ['required', 'string', 'max:100'],
+            'atividades.*.data' => ['required', 'date', 'after:today'],
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
-            'atividades.*.local' => ['nullable', 'max:200'],
-            'atividades.*.link_ tranmissao' => ['nullable', 'max:400'],
-            'atividades.*.descricao' => ['nullable'],
+            'atividades.*.descricao' => ['nullable', 'string'],
             'atividades.*.tipo_atividade_id' => ['required', 'exists:tipo_atividades,id'],
-            'atividades.*.apresentadores' => ['required'],
-            'atividades.*.apresentadores.*.nome' => ['required', 'max:100', 'min:3', 'string'],
+            'atividades.*.apresentadores' => ['required', 'array'],
+            'atividades.*.apresentadores.*.nome' => ['required', 'string', 'max:100'],
             'atividades.*.apresentadores.*.email' => ['required', 'email', 'max:100'],
         ]);
         if ($validator->fails()) {
@@ -275,24 +271,24 @@ class EventoController extends Controller {
                 } else {
                     $a = new Atividade();
                 }
-                $a->nome = $atv->nome;
-                $a->data = Carbon::createFromFormat('d/m/Y', $atv->data)->format('Y-m-d');
-                $a->horario_inicio = $atv->horario_inicio;
-                $a->horario_fim = $atv->horario_fim;
-                $a->descricao = $atv->descricao;
-                $a->local = $atv->local;
-                $a->tipo_atividade()->associate($atv->tipo_atividade_id);
+                $a->nome = $atv['nome'];
+                $a->data = Carbon::createFromFormat('d/m/Y', $atv['data'])->format('Y-m-d');
+                $a->horario_inicio = $atv['horario_inicio'];
+                $a->horario_fim = $atv['horario_fim'];
+                $a->descricao = $atv['descricao'];
+                $a->local = $atv['local'];
+                $a->tipo_atividade()->associate($atv['tipo_atividade_id']);
                 $a->evento()->associate($e->id);
                 $a->save();
                 $participantes = [];
-                foreach ($atv->apresentadores as $apresentador) {
-                    $apr = Apresentador::firstWhere('email', $apresentador->email);
+                foreach ($atv['apresentadores'] as $apresentador) {
+                    $apr = Apresentador::firstWhere('email', $apresentador['email']);
                     if ($apr == null) {
                         $apr = new Apresentador();
-                        $apr->email = $apresentador->email;
+                        $apr->email = $apresentador['email'];
                     }
-                    $apr->nome = $apresentador->nome;
-                    $apr_user = User::firstWhere('email', $apresentador->email);
+                    $apr->nome = $apresentador['nome'];
+                    $apr_user = User::firstWhere('email', $apresentador['email']);
                     $pa = ParticipanteAtividade::where('apresentador_id', $apr->id)->where('atividade_id', $a->id)->first();
 
 
