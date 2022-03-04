@@ -140,8 +140,15 @@ class InstituicaoController extends Controller {
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email', 'exists:users,email'],
         ]);
+
         if ($validator->fails()) {
             return response()->json(['error' => 'Usuário não encontrado'], 422);
+        }
+        if ($user->instituicao_id != null) {
+            if ($user->instituicao_id != $admin->instituicao_id) {
+                return response()->json(["msg" => "Usuário já está associado a uma instituição"], 422);
+            }
+            return response()->json(['msg' => 'Usuário já está associado a esta instituição'], 422);
         }
         $user->instituicao()->associate($admin->instituicao_id);
         $user->save();
@@ -169,10 +176,16 @@ class InstituicaoController extends Controller {
             return response()->json('Usuário não encontrado', 422);
         }
         $associado = User::where('email', $email)->first();
-        $associado->removeRole('associado');
-        $associado->instituicao()->dissociate();
-        $associado->save();
+        if ($associado != null) {
+            if ($associado->instituicao_id != $user->instituicao_id) {
+                return response()->json(['msg' => 'Usuário não pertence a esta instituição'], 422);
+            }
+            $associado->removeRole('associado');
+            $associado->instituicao()->dissociate();
+            $associado->save();
 
-        return response()->json($associado);
+            return response()->json($associado);
+        }
+        return response()->json(['msg' => 'Usuário não encontrado'], 422);
     }
 }
