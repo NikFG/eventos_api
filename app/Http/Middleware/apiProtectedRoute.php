@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\Http\Middleware\BaseMiddleware;
 
 class apiProtectedRoute extends BaseMiddleware {
     /**
@@ -18,9 +18,9 @@ class apiProtectedRoute extends BaseMiddleware {
         try {
             $user = JWTAuth::parseToken()->authenticate();
         } catch (\Exception $e) {
-            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
+            if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException) {
                 return response()->json(['status' => 'Token é inválido']);
-            } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+            } else if ($e instanceof \PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException) {
                 return response()->json(['status' => 'Token está expirado']);
             } else {
                 return response()->json(['status' => 'Token de autorização não encontrado']);
