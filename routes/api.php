@@ -25,7 +25,7 @@ Route::group(["prefix" => "eventos"], function () {
     Route::post("/store", [EventoController::class, 'store'])->can('gerenciar_evento');
     Route::post("/update/{id}", [EventoController::class, 'update'])->can('gerenciar_evento');
     Route::delete("/{id}", [EventoController::class, 'destroy'])->can('gerenciar_evento');
-
+    Route::post("/{id}/uploadImagens", [EventoController::class, 'upload_imagens'])->can('gerenciar_evento')->where('id', '[0-9]+');
 });
 
 Route::group(["prefix" => "categorias"], function () {
