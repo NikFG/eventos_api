@@ -59,11 +59,11 @@ class InitialSeeder extends Seeder {
         $c->save();
 
         $ti = new \App\Models\TipoImagem();
-        $ti->nome = "teste";
+        $ti->nome = "banner";
         $ti->save();
 
         $ti = new \App\Models\TipoImagem();
-        $ti->nome = "teste2";
+        $ti->nome = "outras";
         $ti->save();
 
         $ta = new \App\Models\TipoAtividade();
