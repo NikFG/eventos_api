@@ -89,5 +89,6 @@ Route::group(["prefix" => "modelos"], function () {
     Route::get('/', [ModeloCertificadoController::class, 'index']);
     Route::get('/instituicao/{id}', [ModeloCertificadoController::class, 'indexByInstituicao']);
     Route::post('/store', [ModeloCertificadoController::class, 'store'])->can('gerenciar_certificado');
+    Route::post('/uploadImagens/{id}', [ModeloCertificadoController::class, 'uploadImagens'])->can('gerenciar_certificado')->where('id', '[0-9]+');
 });
 
