@@ -21,12 +21,12 @@
         }
 
         .overlay {
-            position: absolute;
+            /*position: absolute;*/
             top: 0;
             left: 0;
             height: 100%;
             width: 100%;
-            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->imagem_fundo)}});
+            background-image: url("data:image/jpg;base64,{{base64_encode(file_get_contents( $modelo->imagem_fundo))}}");
             background-size: 100% 100%;
 
             background-position: left top;
@@ -65,11 +65,21 @@
             position: absolute;
         }
 
+        .imgAssinatura {
+            background-color: rgba(255, 255, 255, 1.0);
+            margin-top: 0.5cm;
+            margin-left: 0.5cm;
+            height: 30px;
+            width: 100%;
+            z-index: 0;
+            /*position: absolute;*/
+        }
+
         .logo {
             height: 100px;
             width: 100%;
             margin-left: 0;
-            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->logo)}});
+            background-image: url("data:image/jpg;base64,{{base64_encode(file_get_contents( $modelo->logo))}}");
             background-repeat: no-repeat;
             background-position: center left;
             background-size: 100% 100px;
@@ -87,13 +97,15 @@
 
         .divTexto {
             color: black;
-            width: 100%;
+            width: 98%;
+            margin-right: 5px;
         }
 
         .texto {
             margin-left: 1rem;
             text-align: justify;
             font-size: 16pt;
+
         }
 
         .negrito {
@@ -114,22 +126,27 @@
             text-align: right;
             font-size: 14pt;
             height: 50px;
-            right: 1cm;
+            right: 2cm;
+            margin-right: 20px;
             display: block;
         }
 
         .assinatura {
             /*background-color: rgba(150, 150, 150, 0.5) !important;*/
-            -webkit-print-color-adjust: exact;
-            height: 1.5cm;
+            /*-webkit-print-color-adjust: exact;*/
+            height: 40px;
+            margin-left: 38%;
             width: 100%;
-            background-image: url({{\Illuminate\Support\Facades\Storage::url($modelo->assinatura)}});
+            margin-bottom: 2px;
+            background-image: url("data:image/jpg;base64,{{base64_encode(file_get_contents( $modelo->assinatura))}}");
             background-repeat: no-repeat;
             background-position: center left;
-            background-size: 100% 1.5cm;
+            background-size: 20% 40px;
             text-align: center;
             justify-content: center;
+            z-index: -2;
         }
+
 
         .nome_assinatura {
             text-align: center;
@@ -188,14 +205,18 @@
 
                 <div>
                     <div>
-                        <div class="assinatura">
-{{--                            <img class="" src="{{\Illuminate\Support\Facades\Storage::url($modelo->assinatura)}}" alt="assinatura"/>--}}
+                        <div class="row imgAssinatura">
+                            <div class="assinatura">
+
+                            </div>
                         </div>
-                        <div class="nome_assinatura">
-                            {{$modelo->nome_assinatura}}
-                        </div>
-                        <div class="cargo">
-                            {{$modelo->cargo_assinatura}}
+                        <div class="row">
+                            <div class="nome_assinatura">
+                                {{$modelo->nome_assinatura}}
+                            </div>
+                            <div class="cargo">
+                                {{$modelo->cargo_assinatura}}
+                            </div>
                         </div>
                     </div>
 
@@ -205,9 +226,9 @@
                     Código de verificação: {{$certificado->codigo_verificacao}}
                 </p>
             </div>
+
         </div>
     </div>
-
 
 
 </div>

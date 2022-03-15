@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Dcblogdev\Dropbox\Facades\Dropbox;
 
 class EventoController extends Controller {
 
@@ -32,10 +33,8 @@ class EventoController extends Controller {
     public function index(Request $request): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
-        }])
-            ->with('categoria')
+        }, 'categoria', 'instituicao'])
             ->whereHas('atividades')
-            ->with('instituicao')
             ->orderBy('created_at', 'desc');
 
         if ($request->titulo != null) {
@@ -77,8 +76,10 @@ class EventoController extends Controller {
                 $q->whereTime('atividades.horario_fim', '<=', $request->horarioFim);
             });
         }
+
         return response()->json($eventos->paginate(20));
     }
+
 
     public function porCategoria($id): JsonResponse {
         $eventos = Evento::with(['atividades' => function ($query) {
@@ -97,7 +98,8 @@ class EventoController extends Controller {
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse {
+    public
+    function store(Request $request): JsonResponse {
 
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
@@ -107,10 +109,10 @@ class EventoController extends Controller {
             'local' => ['nullable', 'max:500'],
             'descricao' => ['nullable'],
             'categoria_id' => ['required', 'exists:categorias,id'],
-            'banner' => ['required', 'image'],
+//            'banner' => ['required', 'image'],
             'atividades' => ['required', 'array'],
             'atividades.*.nome' => ['required', 'string', 'max:100'],
-            'atividades.*.data' => ['required', 'date', 'after:today'],
+            'atividades.*.data' => ['required'],
             'atividades.*.horario_inicio' => ['required', 'date_format:H:i'],
             'atividades.*.horario_fim' => ['required', 'date_format:H:i', 'after:atividades.*.horario_inicio'],
             'atividades.*.descricao' => ['nullable', 'string'],
@@ -124,7 +126,7 @@ class EventoController extends Controller {
             return response()->json(['message' => $validator->errors()], 422);
         }
         try {
-            DB::transaction(function () use ($user, $request) {
+            $id = DB::transaction(function () use ($user, $request) {
                 $instituicao = Instituicao::find($user->instituicao_id);
                 $e = new Evento();
                 $e->nome = $request->nome;
@@ -166,36 +168,33 @@ class EventoController extends Controller {
                         $pa->apresentador_id = $apr->id;
                         $pa->save();
                     }
-
-
                 }
-                $path = "images/eventos/{$e->id}/";
-                $banner = $request->file('banner');
-                $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
-                Storage::cloud()->put($nome_banner, $banner->getContent());
+//                $path = "images/eventos/{$e->id}/";
+                //      $banner = $request->file('banner');
+                //     $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
+//                Storage::cloud()->put($nome_banner, $banner->getContent());
+                /*
+                                if ($request->files->has('imagem')) {
+                                    foreach ($request->file('imagem') as $key => $i) {
+                                        $img = new Imagem();
+                                        $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
+                                        Storage::cloud()->put($nome, $i->getContent());
+                                        $img->imagem = Storage::cloud()->url($nome);
+                                        $img->evento()->associate($e->id);
+                                        $img->tipo()->associate(1);
+                                        $img->save();
+                                    }
+                                }
 
-                if ($request->files->has('imagem')) {
-                    foreach ($request->file('imagem') as $key => $i) {
-                        $img = new Imagem();
-                        $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
-                        Storage::cloud()->put($nome, $i->getContent());
-                        $img->imagem = Storage::cloud()->url($nome);
-                        $img->evento()->associate($e->id);
-                        $img->tipo()->associate(1);
-                        $img->save();
-                    }
-                }
-
-                $e->banner = Storage::cloud()->url($nome_banner);
+                                $e->banner = Storage::cloud()->url($nome_banner);*/
                 $e->save();
+                return $e->id;
             });
+            return response()->json(['id' => $id], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage(),
-                'trace' => $e->getTrace(),
-                'traceString' => $e->getTraceAsString()], 500);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
 
-        return response()->json(null, 201);
     }
 
     /**
@@ -204,7 +203,8 @@ class EventoController extends Controller {
      * @param int $id
      * @return JsonResponse
      */
-    public function show(int $id): JsonResponse {
+    public
+    function show(int $id): JsonResponse {
         $evento = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome")->with('apresentadores');
         }])
@@ -224,7 +224,8 @@ class EventoController extends Controller {
      * @param int $id
      * @return JsonResponse
      */
-    public function update(Request $request, int $id): JsonResponse {
+    public
+    function update(Request $request, int $id): JsonResponse {
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'nome' => ['required', 'string', 'min:10', 'max:100'],
@@ -310,27 +311,27 @@ class EventoController extends Controller {
 
                 ParticipanteAtividade::whereNotNull('apresentador_id')->whereNotIn('apresentador_id', $participantes)->where('atividade_id', $a->id)->delete();
 
-                if ($request->hasFile('banner')) {
-                    Storage::cloud()->delete($e->banner);
-                    $path = "images/eventos/{$e->id}/";
-                    $banner = $request->file('banner');
-                    $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
-                    Storage::cloud()->put($nome_banner, $banner->getContent());
-                    $e->banner = Storage::cloud()->url($nome_banner);
-                }
+                /* if ($request->hasFile('banner')) {
+                     Storage::cloud()->delete($e->banner);
+                     $path = "images/eventos/{$e->id}/";
+                     $banner = $request->file('banner');
+                     $nome_banner = $path . "banner/" . Str::uuid() . '-' . $banner->getClientOriginalName();
+                     Storage::cloud()->put($nome_banner, $banner->getContent());
+                     $e->banner = Storage::cloud()->url($nome_banner);
+                 }
 
-                if ($request->files->has('imagem')) {
-                    Storage::cloud()->deleteDirectory($path . "outras/");
-                    foreach ($request->file('imagem') as $key => $i) {
-                        $img = new Imagem();
-                        $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
-                        Storage::cloud()->put($nome, $i->getContent());
-                        $img->imagem = Storage::cloud()->url($nome);
-                        $img->evento()->associate($e->id);
-                        $img->tipo()->associate(1);
-                        $img->save();
-                    }
-                }
+                 if ($request->files->has('imagem')) {
+                     Storage::cloud()->deleteDirectory($path . "outras/");
+                     foreach ($request->file('imagem') as $key => $i) {
+                         $img = new Imagem();
+                         $nome = $path . "outras/" . Str::uuid() . '-' . $i->getClientOriginalName();
+                         Storage::cloud()->put($nome, $i->getContent());
+                         $img->imagem = Storage::cloud()->url($nome);
+                         $img->evento()->associate($e->id);
+                         $img->tipo()->associate(1);
+                         $img->save();
+                     }
+                 }*/
                 $e->save();
             }
         });
@@ -344,20 +345,23 @@ class EventoController extends Controller {
      * @param int $id
      * @return JsonResponse
      */
-    public function destroy(int $id): JsonResponse {
+    public
+    function destroy(int $id): JsonResponse {
         $e = Evento::findOrFail($id);
         $e->delete();
         return response()->json(null, 204);
     }
 
-    public function compraIngresso(Request $request): JsonResponse {
+    public
+    function compraIngresso(Request $request): JsonResponse {
         $user = Auth::user();
         $atividades_id = json_decode($request->atividades);
         $user->atividades()->sync($atividades_id);
         return response()->json($atividades_id, 201);
     }
 
-    public function eventos_criados(): JsonResponse {
+    public
+    function eventos_criados(): JsonResponse {
         $user = Auth::user();
         $eventos = Evento::with(['atividades' => function ($query) {
             $query->orderBy('data')->orderBy('horario_inicio')->orderBy('horario_fim')->orderBy("nome");
@@ -375,7 +379,8 @@ class EventoController extends Controller {
         return response()->json($eventos);
     }
 
-    public function eventos_participados(): JsonResponse {
+    public
+    function eventos_participados(): JsonResponse {
         $user = Auth::user();
         $eventos = Evento::whereHas('atividades', function (Builder $query) use ($user) {
             $query->whereRelation('users', 'users.id', $user->id);
@@ -396,4 +401,23 @@ class EventoController extends Controller {
             ->get();
         return response()->json($atividades);
     }
+
+    public function upload_imagens(Request $request, $id): JsonResponse {
+
+        foreach ($request->imagens as $key => $i) {
+            $img = new Imagem();
+            $img->descricao = $i['nome'];
+            $img->imagem = $i['url'];
+            $img->evento()->associate($id);
+            $img->tipo()->associate($i['tipo'] == 'banner' ? 1 : 2);
+            if ($i['tipo'] == 'banner') {
+                $e = Evento::findOrFail($id);
+                $e->banner = $i['url'];
+                $e->save();
+            }
+            $img->save();
+        }
+        return response()->json(null, 201);
+    }
 }
+

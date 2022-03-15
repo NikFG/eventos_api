@@ -7,6 +7,8 @@ use App\Mail\EnvioEmail;
 use App\Models\Apresentador;
 use App\Models\Atividade;
 use App\Models\Certificado;
+use App\Models\Instituicao;
+use App\Models\ModeloCertificado;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -18,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use PDF;
 
 class CertificadoController extends Controller {
     /**
@@ -51,7 +54,8 @@ class CertificadoController extends Controller {
 
 
         try {
-            DB::transaction(function () use ($modelo, $horas, $a, $participantes, $apresentadores) {
+            $lista_certificados = DB::transaction(function () use ($modelo, $horas, $a, $participantes, $apresentadores) {
+                $lista_pdf = [];
                 foreach ($participantes as $p) {
                     Log::info("Participante: " . $p);
                     $data = Carbon::now();
@@ -73,7 +77,7 @@ class CertificadoController extends Controller {
                         $user = User::findOrFail($c->participante_id);
 
                         Mail::send(new EnvioEmail($user->nome, $user->email, $c));
-//                        EnvioEmailJob::dispatch($user->nome, $user->email, $c)->delay(now()->addSeconds('3'));
+                        $lista_pdf[] = ['id' => $c->id, 'pdf' => $this->geraPDF($c, $user->nome)];
                     }
                 }
                 foreach ($apresentadores as $ap) {
@@ -96,14 +100,18 @@ class CertificadoController extends Controller {
                         $a->apresentadores()->updateExistingPivot($ap, ['participou' => true]);
                         $apr = Apresentador::findOrFail($c->apresentador_id);
                         EnvioEmailJob::dispatch($apr->nome, $apr->email, $c)->delay(now()->addSeconds('3'));
+                        $lista_pdf[] = ['id' => $c->id, 'pdf' => $this->geraPDF($c, $apr->nome)];
                     }
                 }
+                return $lista_pdf;
             });
+            return response()->json($lista_certificados);
+
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json($e->getTrace(), 500);
         }
-        return response()->json(null, 201);
+
     }
 
     public function gerarCertificado(int $id): JsonResponse {
@@ -191,5 +199,25 @@ class CertificadoController extends Controller {
         $url = Storage::cloud()->temporaryUrl('certificados/' . $id . '.pdf', now()->addHours());
 
         return response()->json(['url' => $url]);
+    }
+
+    private function geraPDF($certificado, $nome) {
+
+        $modelo = ModeloCertificado::find($certificado->modelo_certificado_id);
+        $atividade = Atividade::find($certificado->atividade_id);
+        $instituicao = Instituicao::find($certificado->instituicao_id);
+
+        $data = Carbon::parse($certificado->data_emissao)->formatLocalized('%d de %B de %Y');
+        $pdf = PDF::loadView('certificado', [
+            'certificado' => $certificado,
+            'modelo' => $modelo,
+            'nome' => $nome,
+            'atividade' => $atividade,
+            'instituicao' => $instituicao,
+            'data' => $data,
+            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar'
+        ])->setPaper('a4', 'landscape')->setWarnings(false);
+
+        return base64_encode($pdf->output());
     }
 }

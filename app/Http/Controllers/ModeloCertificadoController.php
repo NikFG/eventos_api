@@ -34,16 +34,16 @@ class ModeloCertificadoController extends Controller {
         $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'titulo' => ['required', 'string', 'max:255'],
-            'imagem_fundo' => ['required', 'image'],
-            'assinatura' => ['required', 'image'],
-            'logo' => ['required', 'image'],
+//            'imagem_fundo' => ['required', 'image'],
+//            'assinatura' => ['required', 'image'],
+//            'logo' => ['required', 'image'],
             'nome_assinatura' => ['required', 'string', 'max:100'],
             'cargo_assinatura' => ['required', 'string', 'max:50'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        DB::transaction(function () use ($user, $request) {
+        $id = DB::transaction(function () use ($user, $request) {
 
             $m = new ModeloCertificado();
             $m->nome_assinatura = $request->nome_assinatura;
@@ -52,26 +52,27 @@ class ModeloCertificadoController extends Controller {
             $m->instituicao()->associate($user->instituicao_id);
             $m->save();
 
-            $path = "images/modelo/{$m->id}";
-            $imagem_fundo = $request->file('imagem_fundo');
-            $nome_imagem_fundo = $path . "/imagemfundo/" . Str::uuid() . '-' . $imagem_fundo->getClientOriginalName();
-            Storage::cloud()->put($nome_imagem_fundo, $imagem_fundo->getContent());
+            /*   $path = "images/modelo/{$m->id}";
+               $imagem_fundo = $request->file('imagem_fundo');
+               $nome_imagem_fundo = $path . "/imagemfundo/" . Str::uuid() . '-' . $imagem_fundo->getClientOriginalName();
+               Storage::cloud()->put($nome_imagem_fundo, $imagem_fundo->getContent());
 
-            $logo = $request->file('logo');
-            $nome_logo = $path . "/logo/" . Str::uuid() . '-' . $logo->getClientOriginalName();
-            Storage::cloud()->put($nome_logo, $logo->getContent());
+               $logo = $request->file('logo');
+               $nome_logo = $path . "/logo/" . Str::uuid() . '-' . $logo->getClientOriginalName();
+               Storage::cloud()->put($nome_logo, $logo->getContent());
 
-            $assinatura = $request->file('assinatura');
-            $path_assinatura = $path . "/assinatura/" . Str::uuid() . '-' . $assinatura->getClientOriginalName();
-            Storage::cloud()->put($path_assinatura, $assinatura->getContent());
+               $assinatura = $request->file('assinatura');
+               $path_assinatura = $path . "/assinatura/" . Str::uuid() . '-' . $assinatura->getClientOriginalName();
+               Storage::cloud()->put($path_assinatura, $assinatura->getContent());
 
-            $m->imagem_fundo = $nome_imagem_fundo;
-            $m->logo = $nome_logo;
-            $m->assinatura = $path_assinatura;
+               $m->imagem_fundo = $nome_imagem_fundo;
+               $m->logo = $nome_logo;
+               $m->assinatura = $path_assinatura;*/
 
             $m->save();
+            return $m->id;
         });
-        return response()->json(null, 201);
+        return response()->json(['id' => $id]);
     }
 
     /**
@@ -110,5 +111,14 @@ class ModeloCertificadoController extends Controller {
     public function indexByInstituicao(int $id): JsonResponse {
         $modelos = ModeloCertificado::with('certificados.evento')->where('instituicao_id', $id)->get();
         return response()->json($modelos);
+    }
+
+    function uploadImagens(Request $request, $id) {
+        $m = ModeloCertificado::find($id);
+        $m->imagem_fundo = $request->imagem_fundo;
+        $m->logo = $request->logo;
+        $m->assinatura = $request->assinatura;
+        $m->save();
+        return response()->json(null, 201);
     }
 }

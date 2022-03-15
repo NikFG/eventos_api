@@ -8,7 +8,7 @@ use App\Models\ModeloCertificado;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,33 +97,46 @@ Route::view('forgot_password', 'auth.reset_password')->name('password.reset');
 
 //certificado route with certicidao view
 Route::get('/certificado', function () {
+
     $user = User::findOrFail(1);
-    $c = Certificado::findOrFail(1);
+    $c = Certificado::findOrFail(6);
 //    Mail::send(new EnvioEmail($user, 'loucura', ''));
 
-    $modelo = ModeloCertificado::find($c->modelo_certificado_id);
+    $modelo = ModeloCertificado::find(10);
     $atividade = Atividade::find($c->atividade_id);
     $instituicao = Instituicao::find($c->instituicao_id);
+    $nome = 'aaaaaa';
 
-    $data = Carbon::parse($c->data_emissao)->formatLocalized('%d de %B de %Y');
-    $pdf = PDF::loadView('certificado', [
-        'certificado' => $c,
-        'modelo' => $modelo,
-        'participante' => $user,
-        'atividade' => $atividade,
-        'instituicao' => $instituicao,
-        'data' => $data,
+    Carbon::setLocale('pt_BR');
+    $data = Carbon::parse($c->data_emissao)->translatedFormat('d')
+        . " de " . Carbon::parse($c->data_emissao)->translatedFormat('F')
+        . " de " . Carbon::parse($c->data_emissao)->translatedFormat('Y');
+    $pdf = PDF::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+        ->loadView('certificado', [
+            'certificado' => $c,
+            'modelo' => $modelo,
+            'nome' => $nome,
+            'atividade' => $atividade,
+            'instituicao' => $instituicao,
+            'data' => $data,
+            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar'
 
-    ])->setPaper('a4', 'landscape')->setWarnings(false);
-    return $pdf->download('teste.pdf');
-
+        ])->setPaper('a4', 'landscape')->setWarnings(false);
+    $arquivo = $pdf->output();
+//    $arquivo2 = $pdf->stream('aaaa.pdf');
+//    return $arquivo2;
+//    $this->attachData($arquivo, 'certificado.pdf');
+    \Illuminate\Support\Facades\Storage::disk('local')->put('certificado.pdf', $arquivo);
+//    return $pdf->download('teste.pdf');
+    return $pdf->stream('certificado.pdf');
     return view('certificado', [
         'certificado' => $c,
         'modelo' => $modelo,
-        'participante' => $user,
+        'nome' => $nome,
         'atividade' => $atividade,
         'instituicao' => $instituicao,
         'data' => $data,
+        'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar'
 
     ]);
 })->name('certificado');
