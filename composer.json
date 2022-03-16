@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": ">=8.0.2",
+        "ext-gd": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
         "barryvdh/laravel-dompdf": "^1.0.0",
