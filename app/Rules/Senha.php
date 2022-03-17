@@ -8,12 +8,11 @@ use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Traits\Conditionable;
+use InvalidArgumentException;
 
-class Senha implements Rule
-    , DataAwareRule, ValidatorAwareRule {
+class Senha implements Rule, DataAwareRule, ValidatorAwareRule {
     use Conditionable;
 
     /**
@@ -75,7 +74,7 @@ class Senha implements Rule
     /**
      * Create a new rule instance.
      *
-     * @param  array  $options
+     * @param array $options
      * @return void
      */
     protected $change = false;
