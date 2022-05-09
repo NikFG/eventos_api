@@ -37,7 +37,7 @@ class AtividadeController extends Controller {
      * @return JsonResponse
      */
     public function show(int $id): JsonResponse {
-        $atividade = Atividade::find($id);
+        $atividade = Atividade::query()->find($id);
 //            ->find($id);
         return response()->json($atividade);
     }
