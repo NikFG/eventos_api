@@ -99,7 +99,8 @@ class CertificadoController extends Controller {
                     if ($c->save()) {
                         $a->apresentadores()->updateExistingPivot($ap, ['participou' => true]);
                         $apr = Apresentador::findOrFail($c->apresentador_id);
-                        EnvioEmailJob::dispatch($apr->nome, $apr->email, $c)->delay(now()->addSeconds('3'));
+                        Mail::send(new EnvioEmail($apr->nome, $apr->email, $c));
+//                        EnvioEmailJob::dispatch($apr->nome, $apr->email, $c)->delay(now()->addSeconds('3'));
                         $lista_pdf[] = ['id' => $c->id, 'pdf' => $this->geraPDF($c, $apr->nome)];
                     }
                 }
@@ -118,11 +119,11 @@ class CertificadoController extends Controller {
         $c = Certificado::find($id);
 
         $user = User::findOrFail($c->participante_id);
-        EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
-        /* Mail::send(new EnvioEmail($user,$c));
-         if (Mail::failures()) {
-             return response()->json(Mail::failures(), 500);
-         }*/
+//        EnvioEmailJob::dispatch($user->, $c)->delay(now()->addSeconds('3'));
+         Mail::send(new EnvioEmail($user->nome,$user->email,$c));
+//         if (Mail::failures()) {
+//             return response()->json(Mail::failures(), 500);
+//         }
 
 
         return response()->json(null, 201);
@@ -207,7 +208,11 @@ class CertificadoController extends Controller {
         $atividade = Atividade::find($certificado->atividade_id);
         $instituicao = Instituicao::find($certificado->instituicao_id);
 
-        $data = Carbon::parse($certificado->data_emissao)->formatLocalized('%d de %B de %Y');
+        Carbon::setLocale('pt_BR');
+        //conversão e formatação da data
+        $data = Carbon::parse($certificado->data_emissao)->translatedFormat('d')
+            . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('F')
+            . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('Y');
         $pdf = PDF::loadView('certificado', [
             'certificado' => $certificado,
             'modelo' => $modelo,
