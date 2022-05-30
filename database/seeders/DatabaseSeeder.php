@@ -10,9 +10,13 @@ class DatabaseSeeder extends Seeder {
      *
      * @return void
      */
-    public function run() {
-        $this->call([
-            InitialSeeder::class
-        ]);
+    public function run(): void {
+        $this->call(InitialSeeder::class);
+        $this->call(EventosSeeder::class);
+        $this->call(AtividadesSeeder::class);
+        $this->call(ApresentadoresSeeder::class);
+        $this->call(ParticipanteAtividadesSeeder::class);
+        $this->call(ImagensSeeder::class);
+
     }
 }
