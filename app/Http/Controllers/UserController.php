@@ -27,9 +27,9 @@ class UserController extends Controller {
      */
     public function store(Request $request): JsonResponse {
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|min:3',
-            'email' => 'required|email|unique:users',
-            'cpf' => 'required|cpf|unique:users',
+            'nome'     => 'required|string|min:3',
+            'email'    => 'required|email|unique:users',
+            'cpf'      => 'required|cpf|unique:users',
             'password' => ['required', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)],
             'telefone' => 'required|celular_com_ddd',
         ]);
@@ -40,11 +40,11 @@ class UserController extends Controller {
         if ($user != null) {
             return response()->json([], 409);
         }
-        $user = new User();
-        $user->nome = $request->nome;
-        $user->cpf = $request->cpf;
+        $user           = new User();
+        $user->nome     = $request->nome;
+        $user->cpf      = $request->cpf;
         $user->password = bcrypt($request->password);
-        $user->email = $request->email;
+        $user->email    = $request->email;
         $user->telefone = $request->telefone;
         $user->save();
         $user->assignRole('usuario');
@@ -72,10 +72,10 @@ class UserController extends Controller {
     public function update(Request $request, int $id): JsonResponse {
         Auth::user();
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|min:3',
-            'telefone' => 'required|celular_com_ddd',
+            'nome'         => 'required|string|min:3',
+            'telefone'     => 'required|celular_com_ddd',
             'old_password' => 'required_with:password',
-            'password' => ['nullable', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)->change()],
+            'password'     => ['nullable', 'string', 'confirmed', Senha::min(6)->mixedCase()->numbers()->uncompromised(3)->change()],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -89,7 +89,7 @@ class UserController extends Controller {
                 return response()->json([], 401);
             }
         }
-        $user->nome = $request->nome;
+        $user->nome     = $request->nome;
         $user->telefone = $request->telefone;
         if ($request->password != null) {
             $user->password = bcrypt($request->password);
