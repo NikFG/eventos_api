@@ -19,9 +19,9 @@ class AtividadesSeeder extends Seeder {
         \DB::table('atividades')->insert(array(
             0 =>
                 array(
-                    'id' => 1,
+                    'id' => null,
                     'nome' => 'Introdução ao evento',
-                    'data' => '2022-06-01',
+                    'data' => '2022-11-01',
                     'horario_inicio' => '10:30:00',
                     'horario_fim' => '11:30:00',
                     'local' => 'Meet',
@@ -44,9 +44,9 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 ),
             1 =>
                 array(
-                    'id' => 2,
+                    'id' => null,
                     'nome' => 'Minicurso PHP',
-                    'data' => '2022-06-02',
+                    'data' => '2022-11-02',
                     'horario_inicio' => '09:00:00',
                     'horario_fim' => '13:30:00',
                     'local' => 'Meet',
@@ -71,7 +71,7 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 array(
                     'id' => 3,
                     'nome' => 'Apresentação',
-                    'data' => '2022-07-02',
+                    'data' => '2022-11-20',
                     'horario_inicio' => '16:30:00',
                     'horario_fim' => '19:00:00',
                     'local' => 'Teams',
@@ -88,7 +88,7 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 array(
                     'id' => 4,
                     'nome' => 'Minicurso',
-                    'data' => '2022-06-24',
+                    'data' => '2022-11-24',
                     'horario_inicio' => '17:45:00',
                     'horario_fim' => '18:45:00',
                     'local' => 'Meet',
