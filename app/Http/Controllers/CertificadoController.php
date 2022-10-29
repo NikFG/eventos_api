@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\EnvioEmailJob;
 use App\Mail\EnvioEmail;
 use App\Models\Apresentador;
 use App\Models\Atividade;
@@ -29,7 +28,7 @@ class CertificadoController extends Controller {
      * @return JsonResponse
      */
     public function index(): JsonResponse {
-        $user = Auth::user();
+        $user         = Auth::user();
         $certificados = Certificado::where('participante_id', $user->id)->get();
         return response()->json($certificados);
     }
@@ -42,30 +41,29 @@ class CertificadoController extends Controller {
      * @return JsonResponse
      */
     public function store(Request $request, int $id): JsonResponse {
-        $a = Atividade::with('evento')->find($id);
-        $participantes = json_decode($request->participantes);
+        $a              = Atividade::with('evento')->find($id);
+        $participantes  = json_decode($request->participantes);
         $apresentadores = json_decode($request->apresentadores);
         $horario_inicio = Carbon::parse($a->horario_inicio);
-        $horario_fim = Carbon::parse($a->horario_fim);
-        $horas = $horario_fim->diff($horario_inicio);
-        $modelo = $request->modelo;
-        $horas = $horas->format('%H:%I');
-        $atv = new Atividade();
-
+        $horario_fim    = Carbon::parse($a->horario_fim);
+        $horas          = $horario_fim->diff($horario_inicio);
+        $modelo         = $request->modelo;
+        $horas          = $horas->format('%H:%I');
+        $atv            = new Atividade();
 
         try {
             $lista_certificados = DB::transaction(function () use ($modelo, $horas, $a, $participantes, $apresentadores) {
                 $lista_pdf = [];
                 foreach ($participantes as $p) {
                     Log::info("Participante: " . $p);
-                    $data = Carbon::now();
-                    $c = new Certificado();
-                    $c->descricao = $a->nome;
-                    $c->data_emissao = $data->toDateString();
+                    $data                = Carbon::now();
+                    $c                   = new Certificado();
+                    $c->descricao        = $a->nome;
+                    $c->data_emissao     = $data->toDateString();
                     $c->data_hora_evento = $a->data;
-                    $c->nome_evento = $a->evento->nome;
-                    $c->local = $a->local;
-                    $c->horas = $horas;
+                    $c->nome_evento      = $a->evento->nome;
+                    $c->local            = $a->local;
+                    $c->horas            = $horas;
                     $c->participante()->associate($p);
                     $c->evento()->associate($a->evento_id);
                     $c->instituicao()->associate($a->evento->instituicao_id);
@@ -82,14 +80,14 @@ class CertificadoController extends Controller {
                 }
                 foreach ($apresentadores as $ap) {
 
-                    $data = Carbon::now();
-                    $c = new Certificado();
-                    $c->descricao = $a->nome;
-                    $c->data_emissao = $data->toDateString();
+                    $data                = Carbon::now();
+                    $c                   = new Certificado();
+                    $c->descricao        = $a->nome;
+                    $c->data_emissao     = $data->toDateString();
                     $c->data_hora_evento = $a->data;
-                    $c->nome_evento = $a->evento->nome;
-                    $c->local = $a->local;
-                    $c->horas = $horas;
+                    $c->nome_evento      = $a->evento->nome;
+                    $c->local            = $a->local;
+                    $c->horas            = $horas;
                     $c->apresentador()->associate($ap);
                     $c->evento()->associate($a->evento_id);
                     $c->instituicao()->associate($a->evento->instituicao_id);
@@ -120,29 +118,28 @@ class CertificadoController extends Controller {
 
         $user = User::findOrFail($c->participante_id);
 //        EnvioEmailJob::dispatch($user->, $c)->delay(now()->addSeconds('3'));
-         Mail::send(new EnvioEmail($user->nome,$user->email,$c));
+        Mail::send(new EnvioEmail($user->nome, $user->email, $c));
 //         if (Mail::failures()) {
 //             return response()->json(Mail::failures(), 500);
 //         }
-
 
         return response()->json(null, 201);
     }
 
     /*  public function gerarCertificadoByAtividade(int $id): JsonResponse {
-          $a = Atividade::find($id);
-          $certificados = Certificado::where('atividade_id', $a->id)->get();
-          foreach ($certificados as $c) {
-              $user = User::findOrFail($c->participante_id);
-              EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
-          }
-          return response()->json(null, 201);
-      }*/
+    $a = Atividade::find($id);
+    $certificados = Certificado::where('atividade_id', $a->id)->get();
+    foreach ($certificados as $c) {
+    $user = User::findOrFail($c->participante_id);
+    EnvioEmailJob::dispatch($user, $c)->delay(now()->addSeconds('3'));
+    }
+    return response()->json(null, 201);
+    }*/
     public function gerarCertificadoByUserAtividade(int $id): JsonResponse {
-        $user = Auth::user();
-        $atividade = Atividade::whereRelation('users', 'participou', '=', true)->find($id);
+        $user        = Auth::user();
+        $atividade   = Atividade::whereRelation('users', 'participou', '=', true)->find($id);
         $certificado = Certificado::where('atividade_id', $atividade->id)->where('participante_id', $user->id)->first();
-        $user = User::findOrFail($certificado->participante_id);
+        $user        = User::findOrFail($certificado->participante_id);
         Mail::send(new EnvioEmail($user, $certificado));
         return response()->json(null, 201);
     }
@@ -155,7 +152,7 @@ class CertificadoController extends Controller {
      */
     public function show(int $id): JsonResponse {
         $user = Auth::user();
-        $c = Certificado::find($id);
+        $c    = Certificado::find($id);
         return response()->json($c);
     }
 
@@ -202,25 +199,25 @@ class CertificadoController extends Controller {
         return response()->json(['url' => $url]);
     }
 
-    private function geraPDF($certificado, $nome) {
+    private function __geraPDF($certificado, $nome) {
 
-        $modelo = ModeloCertificado::find($certificado->modelo_certificado_id);
-        $atividade = Atividade::find($certificado->atividade_id);
+        $modelo      = ModeloCertificado::find($certificado->modelo_certificado_id);
+        $atividade   = Atividade::find($certificado->atividade_id);
         $instituicao = Instituicao::find($certificado->instituicao_id);
 
         Carbon::setLocale('pt_BR');
         //conversão e formatação da data
         $data = Carbon::parse($certificado->data_emissao)->translatedFormat('d')
-            . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('F')
-            . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('Y');
+        . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('F')
+        . " de " . Carbon::parse($certificado->data_emissao)->translatedFormat('Y');
         $pdf = PDF::loadView('certificado', [
-            'certificado' => $certificado,
-            'modelo' => $modelo,
-            'nome' => $nome,
-            'atividade' => $atividade,
-            'instituicao' => $instituicao,
-            'data' => $data,
-            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar'
+            'certificado'  => $certificado,
+            'modelo'       => $modelo,
+            'nome'         => $nome,
+            'atividade'    => $atividade,
+            'instituicao'  => $instituicao,
+            'data'         => $data,
+            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar',
         ])->setPaper('a4', 'landscape')->setWarnings(false);
 
         return base64_encode($pdf->output());

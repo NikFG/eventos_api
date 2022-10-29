@@ -77,5 +77,4 @@ class AtividadeController extends Controller {
 
     }
 
-
 }

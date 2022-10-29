@@ -30,21 +30,21 @@ class InstituicaoController extends Controller {
         $user = Auth::user();
 
         $validator = Validator::make($request->all(), [
-            'nome' => ['required', 'string', 'max:200', 'min:3'],
-            'cnpj' => ['required', 'cnpj', 'unique:instituicoes'],
+            'nome'     => ['required', 'string', 'max:200', 'min:3'],
+            'cnpj'     => ['required', 'cnpj', 'unique:instituicoes'],
             'endereco' => ['required', 'max:500', 'string'],
-            'cidade' => ['required', 'string', 'max:100', 'min:3'],
+            'cidade'   => ['required', 'string', 'max:100', 'min:3'],
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
         $instituicao = new Instituicao();
 
-        $instituicao->nome = $request->nome;
-        $instituicao->cnpj = $request->cnpj;
+        $instituicao->nome     = $request->nome;
+        $instituicao->cnpj     = $request->cnpj;
         $instituicao->endereco = $request->endereco;
-        $instituicao->logo = "";//$request->logo;
-        $instituicao->cidade = $request->cidade;
+        $instituicao->logo     = ""; //$request->logo;
+        $instituicao->cidade   = $request->cidade;
         $instituicao->administrador()->associate($user->id);
         $instituicao->save();
         $user->instituicao_id = $instituicao->id;
@@ -74,9 +74,9 @@ class InstituicaoController extends Controller {
         $user = Auth::user();
 
         $validator = Validator::make($request->all(), [
-            'nome' => ['required', 'string', 'max:200', 'min:3'],
+            'nome'     => ['required', 'string', 'max:200', 'min:3'],
             'endereco' => ['required', 'max:500', 'string'],
-            'cidade' => ['required', 'string', 'max:100', 'min:3'],
+            'cidade'   => ['required', 'string', 'max:100', 'min:3'],
         ]);
 
         if ($validator->fails()) {
@@ -85,9 +85,9 @@ class InstituicaoController extends Controller {
 
         $instituicao = Instituicao::find($id);
 
-        $instituicao->nome = $request->nome;
+        $instituicao->nome     = $request->nome;
         $instituicao->endereco = $request->endereco;
-        $instituicao->cidade = $request->cidade;
+        $instituicao->cidade   = $request->cidade;
         $instituicao->save();
         return response()->json([], 201);
     }
@@ -102,16 +102,15 @@ class InstituicaoController extends Controller {
         //
     }
 
-
     public function showByUser() {
-        $user = Auth::user();
+        $user        = Auth::user();
         $instituicao = Instituicao::find($user->instituicao_id);
         return response()->json($instituicao);
     }
 
     public function transferirAdmin(Request $request) {
         $admin = Auth::user();
-        $user = User::where('email', $request->email)->first();
+        $user  = User::where('email', $request->email)->first();
         if ($user == null) {
             return response()->json(["msg" => "Usuário não existente, verifique o email digitado"], 422);
         }
@@ -131,12 +130,11 @@ class InstituicaoController extends Controller {
         return response()->json([], 201);
     }
 
-
     //Associados
 
     public function addAssociado(Request $request) {
-        $admin = Auth::user();
-        $user = User::where('email', $request->email)->first();
+        $admin     = Auth::user();
+        $user      = User::where('email', $request->email)->first();
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email', 'exists:users,email'],
         ]);
@@ -160,7 +158,7 @@ class InstituicaoController extends Controller {
         $user = Auth::user();
 
         $instituicao = Instituicao::find($user->instituicao_id);
-        $associados = $instituicao
+        $associados  = $instituicao
             ->associados($user->id)
             ->where('instituicao_id', $instituicao->id)
             ->get();
@@ -168,9 +166,9 @@ class InstituicaoController extends Controller {
     }
 
     public function deleteAssociado($email) {
-        $user = Auth::user();
+        $user      = Auth::user();
         $validator = Validator::make(['email' => $email], [
-            'email' => ['required', 'email', 'max:255', 'min:3', 'exists:users,email']
+            'email' => ['required', 'email', 'max:255', 'min:3', 'exists:users,email'],
         ]);
         if ($validator->fails()) {
             return response()->json('Usuário não encontrado', 422);

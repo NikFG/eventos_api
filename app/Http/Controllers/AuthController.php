@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
-
 class AuthController extends Controller {
     public function login(Request $request): JsonResponse {
         $credentials = $request->only(['email', 'password']);
@@ -20,16 +19,15 @@ class AuthController extends Controller {
         return $this->respondWithToken($token);
     }
 
-
-    private function respondWithToken($token): JsonResponse {
+    private function __respondWithToken($token): JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
         if ($user->email_verified_at != null) {
             return response()->json([
                 'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth('api')->factory()->getTTL() * 60,
-                'roles' => $user->getRoleNames(),
-                'user' => $user,
+                'token_type'   => 'bearer',
+                'expires_in'   => auth('api')->factory()->getTTL() * 60,
+                'roles'        => $user->getRoleNames(),
+                'user'         => $user,
             ]);
         }
         JWTAuth::setToken($token)->invalidate();
@@ -46,7 +44,7 @@ class AuthController extends Controller {
     public function resetPassword(Request $request): JsonResponse {
 
         $credentials = $request->validate(['email' => 'required|email']);
-        $user = User::where('email', $request->only('email'))->first();
+        $user        = User::where('email', $request->only('email'))->first();
         if ($user != null) {
             $status = Password::sendResetLink(
                 $request->only('email')
@@ -59,9 +57,9 @@ class AuthController extends Controller {
 
     public function reset(): JsonResponse {
         $credentials = request()->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
-            'password' => 'required|string|confirmed'
+            'email'    => 'required|email',
+            'token'    => 'required|string',
+            'password' => 'required|string|confirmed',
         ]);
 
         $reset_password_status = Password::reset($credentials, function ($user, $password) {
@@ -79,7 +77,6 @@ class AuthController extends Controller {
     public function checkAuth(): JsonResponse {
         return response()->json(['valid' => auth()->check()]);
     }
-
 
     public function refresh(): JsonResponse {
         return $this->respondWithToken(auth()->refresh());
