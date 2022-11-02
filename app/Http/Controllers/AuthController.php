@@ -19,7 +19,7 @@ class AuthController extends Controller {
         return $this->respondWithToken($token);
     }
 
-    private function __respondWithToken($token): JsonResponse {
+    private function respondWithToken($token): JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
         if ($user->email_verified_at != null) {
             return response()->json([
