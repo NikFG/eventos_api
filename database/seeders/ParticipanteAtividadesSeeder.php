@@ -19,7 +19,7 @@ class ParticipanteAtividadesSeeder extends Seeder {
         \DB::table('participante_atividades')->insert(array(
             0 =>
                 array(
-                    'id' => null,
+                    'id' => 1,
                     'participou' => 0,
                     'nome_orador' => NULL,
                     'user_id' => NULL,
@@ -30,7 +30,7 @@ class ParticipanteAtividadesSeeder extends Seeder {
                 ),
             1 =>
                 array(
-                    'id' => null,
+                    'id' => 2,
                     'participou' => 0,
                     'nome_orador' => NULL,
                     'user_id' => 2,
@@ -41,7 +41,7 @@ class ParticipanteAtividadesSeeder extends Seeder {
                 ),
             2 =>
                 array(
-                    'id' => null,
+                    'id' => 3,
                     'participou' => 0,
                     'nome_orador' => NULL,
                     'user_id' => NULL,
@@ -52,7 +52,7 @@ class ParticipanteAtividadesSeeder extends Seeder {
                 ),
             3 =>
                 array(
-                    'id' => null,
+                    'id' => 4,
                     'participou' => 0,
                     'nome_orador' => NULL,
                     'user_id' => 2,
@@ -63,7 +63,7 @@ class ParticipanteAtividadesSeeder extends Seeder {
                 ),
             4 =>
                 array(
-                    'id' => null,
+                    'id' => 5,
                     'participou' => 0,
                     'nome_orador' => NULL,
                     'user_id' => 2,

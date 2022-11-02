@@ -19,7 +19,7 @@ class EventosSeeder extends Seeder {
         \DB::table('eventos')->insert(array(
             0 =>
                 array(
-                    'id' => null,
+                    'id' => 1,
                     'nome' => 'Evento cultural',
                     'expectativa_participantes' => 0,
                     'breve_descricao' => 'Evento cultural para os profissionais de TI',
@@ -46,7 +46,7 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 ),
             1 =>
                 array(
-                    'id' => null,
+                    'id' => 2,
                     'nome' => 'O futuro do JavaScript',
                     'expectativa_participantes' => 0,
                     'breve_descricao' => 'Nesta mesa redonda iremos discutir qual será o possível rumo que o JavaScript irá tomar',
@@ -65,7 +65,7 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 ),
             2 =>
                 array(
-                    'id' => null,
+                    'id' => 3,
                     'nome' => 'Introdução ao Laravel',
                     'expectativa_participantes' => 0,
                     'breve_descricao' => 'Minicurso introdutório ao framework Laravel',
