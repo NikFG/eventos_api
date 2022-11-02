@@ -19,7 +19,7 @@ class AtividadesSeeder extends Seeder {
         \DB::table('atividades')->insert(array(
             0 =>
                 array(
-                    'id' => null,
+                    'id' => 1,
                     'nome' => 'Introdução ao evento',
                     'data' => '2022-11-01',
                     'horario_inicio' => '10:30:00',
@@ -44,7 +44,7 @@ Proin vulputate viverra convallis. Duis libero odio, aliquet sit amet elit vel, 
                 ),
             1 =>
                 array(
-                    'id' => null,
+                    'id' => 2,
                     'nome' => 'Minicurso PHP',
                     'data' => '2022-11-02',
                     'horario_inicio' => '09:00:00',
