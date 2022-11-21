@@ -123,7 +123,7 @@ class InitialSeeder extends Seeder {
 
 
 
-        $e = new \App\Models\Evento();
+       /* $e = new \App\Models\Evento();
         $e->nome = "teste";
         $e->descricao = "teste";
         $e->expectativa_participantes = 1;
@@ -131,6 +131,6 @@ class InitialSeeder extends Seeder {
         $e->categoria_id = 1;
         $e->instituicao_id = $i->id;
         $e->tipo_id = 1;
-        $e->banner = "";
+        $e->banner = "";*/
     }
 }
