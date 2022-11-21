@@ -18,7 +18,7 @@ Route::group(["prefix" => "eventos"], function () {
 
     Route::get('/user', [EventoController::class, 'eventos_participados'])->middleware('role:usuario');
     Route::post("/ingressos", [EventoController::class, 'compraIngresso'])->middleware('role:usuario');
-    Route::get('/{id}/user/atividades', [EventoController::class, 'atividades_participadas'])->middleware('role:usuario');
+    Route::get('/{id}/user/atividades', [EventoController::class, 'atividades_participadas']);
 
     Route::get("/criados", [EventoController::class, 'eventos_criados'])->can('gerenciar_evento');
     Route::post("/store", [EventoController::class, 'store'])->can('gerenciar_evento');
