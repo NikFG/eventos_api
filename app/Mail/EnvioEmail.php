@@ -61,7 +61,7 @@ class EnvioEmail extends Mailable {
             'atividade' => $atividade,
             'instituicao' => $instituicao,
             'data' => $data,
-            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar'
+            'verifica_url' => env('HOME_APLICACAO') . '/certificados/verifica'
         ])->setPaper('a4', 'landscape')->setWarnings(false);
 
         $arquivo = $pdf->output();

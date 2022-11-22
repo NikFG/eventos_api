@@ -216,7 +216,7 @@ class CertificadoController extends Controller {
             'atividade' => $atividade,
             'instituicao' => $instituicao,
             'data' => $data,
-            'verifica_url' => env('HOME_APLICACAO') . '/certificado/verificar',
+            'verifica_url' => env('HOME_APLICACAO') . '/certificados/verifica',
         ])->setPaper('a4', 'landscape')->setWarnings(false);
 
         return base64_encode($pdf->output());
