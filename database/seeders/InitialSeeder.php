@@ -89,9 +89,9 @@ class InitialSeeder extends Seeder {
         $u->assignRole('super-admin');
 
         $i = new \App\Models\Instituicao();
-        $i->nome = "teste";
+        $i->nome = "UNIVERSIDADE FEDERAL DE EVENTOS";
         $i->cnpj = "36.119.137/0001-07";
-        $i->endereco = "teste";
+        $i->endereco = "Online";
         $i->cidade = "Divinópolis";
         $i->logo = "";
         $i->administrador()->associate($u);
